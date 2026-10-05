@@ -2,6 +2,8 @@ import { useState } from "react";
 import ARShirt from "./ARShirt";
 import CameraTest from "./CameraTest";
 
+const DEBUG = new URLSearchParams(window.location.search).has("debug");
+
 export default function App() {
   const [mode, setMode] = useState("menu");
 
@@ -13,9 +15,11 @@ export default function App() {
       <h1>AR Kaos</h1>
       <p>Arahkan kamera ke desain di kaos.</p>
       <button onClick={() => setMode("ar")}>Mulai AR</button>
-      <button className="ghost" onClick={() => setMode("test")}>
-        Tes kamera dasar
-      </button>
+      {DEBUG && (
+        <button className="ghost" onClick={() => setMode("test")}>
+          Tes kamera dasar
+        </button>
+      )}
     </div>
   );
 }

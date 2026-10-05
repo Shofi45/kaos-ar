@@ -5,6 +5,7 @@ import { MindARThree } from "mind-ar/dist/mindar-image-three.prod.js";
 const BASE = import.meta.env.BASE_URL;
 const TARGET_SRC = BASE + "targets.mind";
 const VIDEO_SRC = BASE + "anim.mp4";
+const DEBUG = new URLSearchParams(window.location.search).has("debug");
 
 export default function ARShirt({ onBack }) {
   const boxRef = useRef(null);
@@ -98,7 +99,7 @@ export default function ARShirt({ onBack }) {
       {!error && !found && (
         <div className="ar-hint">
           Arahkan ke gambar di kaos
-          <div className="ar-debug">{debug}</div>
+           {DEBUG && <div className="ar-debug">{debug}</div>}
         </div>
       )}
     </div>
