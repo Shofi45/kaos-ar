@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { MindARThree } from "mind-ar/dist/mindar-image-three.prod.js";
 
-const TARGET_SRC = "/targets.mind";
-const VIDEO_SRC = "/anim.mp4";
+const BASE = import.meta.env.BASE_URL;
+const TARGET_SRC = BASE + "targets.mind";
+const VIDEO_SRC = BASE + "anim.mp4";
 
 export default function ARShirt() {
   const boxRef = useRef(null);
