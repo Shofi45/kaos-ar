@@ -3,11 +3,12 @@ import * as THREE from "three";
 import { MindARThree } from "mind-ar/dist/mindar-image-three.prod.js";
 
 const BASE = import.meta.env.BASE_URL;
-const TARGET_SRC = BASE + "targets.mind";
-const VIDEO_SRC = BASE + "anim.mp4";
 const DEBUG = new URLSearchParams(window.location.search).has("debug");
 
-export default function ARShirt({ onBack }) {
+// path relatif -> ditambah BASE, URL penuh (http...) dipakai apa adanya
+const resolve = (p) => (/^https?:\/\//.test(p) ? p : BASE + p);
+
+export default function ARShirt({ design, onBack }) {
   const boxRef = useRef(null);
   const [found, setFound] = useState(false);
   const [error, setError] = useState("");
@@ -22,17 +23,19 @@ export default function ARShirt({ onBack }) {
     const init = async () => {
       try {
         if (!navigator.mediaDevices?.getUserMedia) {
-          throw new Error("Browser tidak menyediakan kamera. Butuh HTTPS atau localhost.");
+          throw new Error(
+            "Browser tidak menyediakan kamera. Butuh HTTPS atau localhost.",
+          );
         }
 
         mindar = new MindARThree({
           container: boxRef.current,
-          imageTargetSrc: TARGET_SRC,
+          imageTargetSrc: resolve(design.target),
         });
         const { renderer, scene, camera } = mindar;
 
         video = document.createElement("video");
-        video.src = VIDEO_SRC;
+        video.src = resolve(design.video);
         video.loop = true;
         video.muted = true;
         video.playsInline = true;
@@ -40,7 +43,7 @@ export default function ARShirt({ onBack }) {
 
         const plane = new THREE.Mesh(
           new THREE.PlaneGeometry(1, 0.75),
-          new THREE.MeshBasicMaterial({ map: new THREE.VideoTexture(video) })
+          new THREE.MeshBasicMaterial({ map: new THREE.VideoTexture(video) }),
         );
         video.addEventListener("loadedmetadata", () => {
           const ratio = video.videoHeight / video.videoWidth;
@@ -49,26 +52,35 @@ export default function ARShirt({ onBack }) {
 
         const anchor = mindar.addAnchor(0);
         anchor.group.add(plane);
-        anchor.onTargetFound = () => { video.play(); setFound(true); };
-        anchor.onTargetLost = () => { video.pause(); setFound(false); };
+        anchor.onTargetFound = () => {
+          video.play();
+          setFound(true);
+        };
+        anchor.onTargetLost = () => {
+          video.pause();
+          setFound(false);
+        };
 
         await mindar.start();
-        if (cancelled) { mindar.stop(); return; }
+        if (cancelled) {
+          mindar.stop();
+          return;
+        }
 
-        // pastikan urutan tumpukan: kamera di bawah, objek AR di atas
         mindar.video.style.zIndex = "0";
         renderer.domElement.style.zIndex = "1";
-
         renderer.setAnimationLoop(() => renderer.render(scene, camera));
 
-        timer = setInterval(() => {
-          const v = mindar.video;
-          const track = v?.srcObject?.getVideoTracks?.()[0];
-          setDebug(
-            `aman=${window.isSecureContext} kamera=${v?.videoWidth}x${v?.videoHeight} ` +
-            `main=${v ? !v.paused : false} track=${track?.readyState}`
-          );
-        }, 500);
+        if (DEBUG) {
+          timer = setInterval(() => {
+            const v = mindar.video;
+            const track = v?.srcObject?.getVideoTracks?.()[0];
+            setDebug(
+              `aman=${window.isSecureContext} kamera=${v?.videoWidth}x${v?.videoHeight} ` +
+                `main=${v ? !v.paused : false} track=${track?.readyState}`,
+            );
+          }, 500);
+        }
       } catch (e) {
         console.error(e);
         setError(`${e.name || "Error"}: ${e.message || e}`);
@@ -85,7 +97,7 @@ export default function ARShirt({ onBack }) {
       } catch {}
       video?.pause();
     };
-  }, []);
+  }, [design]);
 
   return (
     <div className="ar-wrap">
@@ -99,7 +111,7 @@ export default function ARShirt({ onBack }) {
       {!error && !found && (
         <div className="ar-hint">
           Arahkan ke gambar di kaos
-           {DEBUG && <div className="ar-debug">{debug}</div>}
+          {DEBUG && <div className="ar-debug">{debug}</div>}
         </div>
       )}
     </div>
