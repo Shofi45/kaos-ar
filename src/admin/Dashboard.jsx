@@ -3,6 +3,7 @@ import { supabase } from "../supabase";
 import { fetchDesigns, fetchProducts, rupiah } from "./api";
 import DesignsTab from "./DesignsTab";
 import ProductsTab from "./ProductsTab";
+import ContentTab from "./ContentTab";
 import { KATALOG_URL } from "../config";
 
 const ICONS = {
@@ -15,6 +16,7 @@ const ICONS = {
   search: "M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4",
   menu: "M4 6h16M4 12h16M4 18h16",
   close: "M6 6l12 12M18 6 6 18",
+  doc: "M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6",
 };
 
 const Icon = ({ name }) => (
@@ -36,6 +38,7 @@ const NAV = [
   { id: "home", label: "Dashboard", icon: "home" },
   { id: "desain", label: "Desain AR", icon: "design" },
   { id: "produk", label: "Produk", icon: "bag" },
+  { id: "konten", label: "Konten", icon: "doc" },
 ];
 
 const FILTERS = [
@@ -48,6 +51,7 @@ const SUBTITLE = {
   home: "Ringkasan desain AR dan produk brand kamu",
   desain: "Kelola gambar target dan video tiap desain",
   produk: "Kelola katalog produk dan link pembelian",
+  konten: "Ubah isi Home, Tentang, Dokumentasi, dan Kontak",
 };
 
 function Status({ active }) {
@@ -194,7 +198,7 @@ export default function Dashboard({ user }) {
               rel="noreferrer"
             >
               <Icon name="link" />
-              Halaman produk
+              Katalog di zayfen.id
             </a>
             <a className="adm-item" href="/" target="_blank" rel="noreferrer">
               <Icon name="scan" />
@@ -233,7 +237,7 @@ export default function Dashboard({ user }) {
               </h1>
               <p>{SUBTITLE[tab]}</p>
             </div>
-            {tab !== "home" && (
+            {(tab === "desain" || tab === "produk") && (
               <label className="adm-search">
                 <Icon name="search" />
                 <input
@@ -254,8 +258,7 @@ export default function Dashboard({ user }) {
           </header>
 
           {msg && <p className="err">{msg}</p>}
-
-          {tab !== "home" && (
+          {(tab === "desain" || tab === "produk") && (
             <div className="adm-pills">
               {FILTERS.map(([id, text]) => (
                 <button
@@ -272,6 +275,7 @@ export default function Dashboard({ user }) {
           {tab === "home" && (
             <Home designs={designs} products={products} onTab={go} />
           )}
+          {tab === "konten" && <ContentTab onError={setMsg} />}
           {tab === "desain" && (
             <DesignsTab
               designs={designs}

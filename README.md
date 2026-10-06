@@ -19,5 +19,6 @@ arahkan kamera HP, video uji muncul.
 4. Atur `TARGET_SRC` / `VIDEO_SRC` di `src/ARShirt.jsx` kalau namanya beda.
 
 ## Deploy
-    npm run build
-Upload folder `dist` ke Netlify / Vercel (HTTPS otomatis).
+Untuk Cloudflare Pages:
+1. Set build command ke `npm run build` dan output directory ke `dist`.
+2. Pastikan `public/_redirects` ikut ter-deploy. Aturan SPA di dalamnya mengarahkan URL seperti `/katalog` ke `index.html`, agar React bisa menampilkan route tersebut.

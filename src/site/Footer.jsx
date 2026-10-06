@@ -1,15 +1,8 @@
-import {
-  ADDRESS,
-  AR_URL,
-  EMAIL,
-  INSTAGRAM_URL,
-  MENU,
-  SHOPEE_URL,
-  SITE_URL,
-  WA_NUMBER,
-} from "../config";
+import { AR_URL, MENU } from "../config";
+import { useContent } from "../content";
 
 export default function Footer() {
+  const k = useContent("kontak");
   return (
     <footer className="foot">
       <div className="foot-in">
@@ -27,7 +20,7 @@ export default function Footer() {
         <div>
           <h4>Menu</h4>
           {MENU.map((m) => (
-            <a key={m.path} href={SITE_URL + m.path}>
+            <a key={m.path} href={m.path}>
               {m.label}
             </a>
           ))}
@@ -35,25 +28,23 @@ export default function Footer() {
 
         <div>
           <h4>Kontak</h4>
-          <a
-            href={`https://wa.me/${WA_NUMBER}`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            WhatsApp
-          </a>
-          {INSTAGRAM_URL && (
-            <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer">
+          {k.wa && (
+            <a href={`https://wa.me/${k.wa}`} target="_blank" rel="noreferrer">
+              WhatsApp
+            </a>
+          )}
+          {k.instagram && (
+            <a href={k.instagram} target="_blank" rel="noreferrer">
               Instagram
             </a>
           )}
-          {SHOPEE_URL && (
-            <a href={SHOPEE_URL} target="_blank" rel="noreferrer">
+          {k.shopee && (
+            <a href={k.shopee} target="_blank" rel="noreferrer">
               Shopee
             </a>
           )}
-          {EMAIL && <a href={`mailto:${EMAIL}`}>{EMAIL}</a>}
-          {ADDRESS && <span>{ADDRESS}</span>}
+          {k.email && <a href={`mailto:${k.email}`}>{k.email}</a>}
+          {k.address && <span>{k.address}</span>}
         </div>
       </div>
 

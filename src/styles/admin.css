@@ -613,3 +613,16 @@
     font-size: 28px;
   }
 }
+
+.admin textarea {
+  width: 100%;
+  min-height: 80px;
+  box-sizing: border-box;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-2);
+  color: var(--text);
+  font: inherit;
+  resize: vertical;
+}

@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import ARShirt from "./ARShirt";
 import CameraTest from "./CameraTest";
 import Admin from "./Admin";
-import { KATALOG_URL } from "./config";
+import Katalog from "./Katalog";
+import Home from "./pages/Home";
+import Tentang from "./pages/Tentang";
+import Dokumentasi from "./pages/Dokumentasi";
+import Kontak from "./pages/Kontak";
+import { KATALOG_URL, SITE_URL } from "./config";
 import { supabase } from "./supabase";
 
 const params = new URLSearchParams(window.location.search);
@@ -10,6 +15,19 @@ const DEBUG = params.has("debug");
 const ADMIN = params.has("admin");
 const SHOP = params.has("produk");
 const SLUG = params.get("d");
+const KATALOG = window.location.pathname.replace(/\/$/, "") === "/katalog";
+const PATH = window.location.pathname.replace(/\/+$/, "") || "/";
+const AR_HOST =
+  window.location.hostname.startsWith("ar.") ||
+  params.has("ar") ||
+  DEBUG ||
+  Boolean(SLUG);
+const PAGES = {
+  "/": Home,
+  "/tentang": Tentang,
+  "/dokumentasi": Dokumentasi,
+  "/kontak": Kontak,
+};
 
 async function loadDesign(slug) {
   if (supabase && !slug) {
@@ -71,7 +89,7 @@ function Viewer() {
       <button disabled={!design} onClick={() => setMode("ar")}>
         {design || error ? "Mulai AR" : "Memuat..."}
       </button>
-      <a className="ar-link" href={KATALOG_URL}>
+      <a className="ar-link" href={SITE_URL} target="_blank" rel="noreferrer">
         Lihat produk kami
       </a>
       {DEBUG && (
@@ -82,6 +100,7 @@ function Viewer() {
     </div>
   );
 }
+
 function Redirect({ to }) {
   useEffect(() => {
     window.location.replace(to);
@@ -91,6 +110,9 @@ function Redirect({ to }) {
 
 export default function App() {
   if (ADMIN) return <Admin />;
+  if (KATALOG) return <Katalog />;
   if (SHOP) return <Redirect to={KATALOG_URL} />;
+  const Page = PAGES[PATH];
+  if (Page && !(PATH === "/" && AR_HOST)) return <Page />;
   return <Viewer />;
 }
