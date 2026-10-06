@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { MindARThree } from "mind-ar/dist/mindar-image-three.prod.js";
-
+import { REWARD_CODE, REWARD_TEXT } from "./config";
 const BASE = import.meta.env.BASE_URL;
 const DEBUG = new URLSearchParams(window.location.search).has("debug");
 
@@ -32,6 +32,50 @@ export default function ARShirt({ design, onBack }) {
   const [error, setError] = useState("");
   const [debug, setDebug] = useState("memulai...");
   const [muted, setMuted] = useState(false);
+  const [pinned, setPinned] = useState(false);
+  const [hideReward, setHideReward] = useState(false);
+  const [collected, setCollected] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("koleksi") || "[]");
+    } catch {
+      return [];
+    }
+  });
+  const collectedRef = useRef(collected);
+  const total = design.slugs ? design.slugs.length : 0;
+  const count = collected.filter((s) => design.slugs?.includes(s)).length;
+
+  const collect = (slug) => {
+    if (!slug || collectedRef.current.includes(slug)) return;
+    const next = [...collectedRef.current, slug];
+    collectedRef.current = next;
+    setCollected(next);
+    try {
+      localStorage.setItem("koleksi", JSON.stringify(next));
+    } catch {}
+  };
+  const pinnedRef = useRef(null);
+  const pinBoxRef = useRef(null);
+
+  const pin = () => {
+    const v = activeRef.current;
+    if (!v) return;
+    pinnedRef.current = v;
+    v.className = "ar-pinned";
+    pinBoxRef.current.appendChild(v);
+    v.play().catch(() => {});
+    setPinned(true);
+  };
+
+  const unpin = () => {
+    const v = pinnedRef.current;
+    if (v) {
+      v.pause();
+      v.remove();
+    }
+    pinnedRef.current = null;
+    setPinned(false);
+  };
   const videosRef = useRef([]);
   const activeRef = useRef(null);
   const mutedRef = useRef(false);
@@ -63,6 +107,10 @@ export default function ARShirt({ design, onBack }) {
         mindar = new MindARThree({
           container: boxRef.current,
           imageTargetSrc: resolve(design.target),
+          filterMinCF: 0.0001,
+          filterBeta: 100,
+          warmupTolerance: 10,
+          missTolerance: 10,
         });
         const { renderer, scene, camera } = mindar;
 
@@ -74,6 +122,7 @@ export default function ARShirt({ design, onBack }) {
           anchor.group.add(plane);
           anchor.onTargetFound = () => {
             activeRef.current = video;
+            collect(design.slugs?.[i]);
             video.muted = mutedRef.current;
             video.play().catch(() => {
               mutedRef.current = true;
@@ -84,7 +133,7 @@ export default function ARShirt({ design, onBack }) {
             setFound(true);
           };
           anchor.onTargetLost = () => {
-            video.pause();
+            if (pinnedRef.current !== video) video.pause();
             setFound(false);
           };
         });
@@ -130,6 +179,32 @@ export default function ARShirt({ design, onBack }) {
   return (
     <div className="ar-wrap">
       <div ref={boxRef} className="ar-box" />
+      <div ref={pinBoxRef} className="ar-pinbox" />
+      {total > 1 && !error && (
+        <div className="ar-collect">
+          Koleksi {count}/{total}
+        </div>
+      )}
+      {total > 1 && count >= total && !hideReward && !error && (
+        <div className="ar-reward">
+          <strong>Selamat!</strong>
+          <p>{REWARD_TEXT}</p>
+          <code>{REWARD_CODE}</code>
+          <button className="small" onClick={() => setHideReward(true)}>
+            Tutup
+          </button>
+        </div>
+      )}
+      {found && !pinned && !error && (
+        <button className="ar-sound ar-pin" onClick={pin}>
+          Tahan video
+        </button>
+      )}
+      {pinned && !error && (
+        <button className="ar-sound ar-pin" onClick={unpin}>
+          Tutup video
+        </button>
+      )}
       {muted && !error && (
         <button className="ar-sound" onClick={enableSound}>
           Nyalakan suara
@@ -141,7 +216,7 @@ export default function ARShirt({ design, onBack }) {
           <button onClick={onBack}>Kembali</button>
         </div>
       )}
-      {!error && !found && (
+      {!error && !found && !pinned && (
         <div className="ar-hint">
           Arahkan ke gambar di kaos
           {DEBUG && <div className="ar-debug">{debug}</div>}

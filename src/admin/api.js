@@ -1,14 +1,22 @@
 import { supabase } from "../supabase";
-import { BUCKET, withV } from "./constants";
 import { compileMind } from "./compileMind";
 
+const BUCKET = "designs";
 const COMBINED = "all/targets.mind";
 
-export const fetchDesigns = () =>
-  supabase
-    .from("designs")
-    .select("*")
-    .order("created_at", { ascending: false });
+export const slugOk = (s) => /^[a-z0-9]+(-[a-z0-9]+)*$/.test(s);
+
+export const designLink = () => `${window.location.origin}/`;
+
+export const rupiah = (n) => "Rp " + Number(n).toLocaleString("id-ID");
+
+export const visible = (list, q, filter, textOf) =>
+  list.filter((x) => {
+    const okStatus = filter === "all" || (filter === "aktif") === x.active;
+    return okStatus && textOf(x).toLowerCase().includes(q.trim().toLowerCase());
+  });
+
+const withV = (u) => `${u}?v=${Date.now()}`;
 
 const uploadFile = async (path, file, type) => {
   const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
@@ -19,6 +27,12 @@ const uploadFile = async (path, file, type) => {
   if (error) throw error;
   return withV(supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl);
 };
+
+export const fetchDesigns = () =>
+  supabase
+    .from("designs")
+    .select("*")
+    .order("created_at", { ascending: false });
 
 const rebuild = async (onProgress) => {
   const { data: rows, error } = await supabase
@@ -115,4 +129,37 @@ export const removeDesign = async (d) => {
     return { error };
   }
   return res;
+};
+
+export const fetchProducts = () =>
+  supabase
+    .from("products")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+export const saveProduct = async (p) => {
+  const id = p.old?.id || crypto.randomUUID();
+  const image_url = p.imageFile
+    ? await uploadFile(`products/${id}/image`, p.imageFile, p.imageFile.type)
+    : p.old?.image_url || "";
+
+  const { error } = await supabase.from("products").upsert({
+    id,
+    name: p.name,
+    price: p.price,
+    category: p.category,
+    image_url,
+    shopee_url: p.shopee_url,
+    design_slug: p.design_slug || null,
+    active: p.old ? p.old.active : true,
+  });
+  if (error) throw error;
+};
+
+export const toggleProduct = (p) =>
+  supabase.from("products").update({ active: !p.active }).eq("id", p.id);
+
+export const removeProduct = async (p) => {
+  await supabase.storage.from(BUCKET).remove([`products/${p.id}/image`]);
+  return supabase.from("products").delete().eq("id", p.id);
 };

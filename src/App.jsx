@@ -2,18 +2,20 @@ import { useEffect, useState } from "react";
 import ARShirt from "./ARShirt";
 import CameraTest from "./CameraTest";
 import Admin from "./Admin";
+import { KATALOG_URL } from "./config";
 import { supabase } from "./supabase";
 
 const params = new URLSearchParams(window.location.search);
 const DEBUG = params.has("debug");
 const ADMIN = params.has("admin");
+const SHOP = params.has("produk");
 const SLUG = params.get("d");
 
 async function loadDesign(slug) {
   if (supabase && !slug) {
     const { data, error } = await supabase
       .from("designs")
-      .select("target_url, video_url")
+      .select("slug, target_url, video_url")
       .not("pos", "is", null)
       .order("pos", { ascending: true });
     if (error) console.error(error);
@@ -21,6 +23,7 @@ async function loadDesign(slug) {
       return {
         target: data[0].target_url,
         videos: data.map((d) => d.video_url),
+        slugs: data.map((d) => d.slug),
       };
     }
   }
@@ -68,6 +71,9 @@ function Viewer() {
       <button disabled={!design} onClick={() => setMode("ar")}>
         {design || error ? "Mulai AR" : "Memuat..."}
       </button>
+      <a className="ar-link" href={KATALOG_URL}>
+        Lihat produk kami
+      </a>
       {DEBUG && (
         <button className="ghost" onClick={() => setMode("test")}>
           Tes kamera dasar
@@ -76,7 +82,15 @@ function Viewer() {
     </div>
   );
 }
+function Redirect({ to }) {
+  useEffect(() => {
+    window.location.replace(to);
+  }, [to]);
+  return null;
+}
 
 export default function App() {
-  return ADMIN ? <Admin /> : <Viewer />;
+  if (ADMIN) return <Admin />;
+  if (SHOP) return <Redirect to={KATALOG_URL} />;
+  return <Viewer />;
 }
