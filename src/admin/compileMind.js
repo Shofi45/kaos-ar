@@ -15,9 +15,9 @@ const loadCompiler = () => {
   return loading;
 };
 
-const loadImage = (file) =>
+const loadImage = (blob) =>
   new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
+    const url = URL.createObjectURL(blob);
     const img = new Image();
     img.onload = () => resolve({ img, url });
     img.onerror = () => {
@@ -27,18 +27,18 @@ const loadImage = (file) =>
     img.src = url;
   });
 
-export const compileMind = async (file, onProgress) => {
-  const { img, url } = await loadImage(file);
+export const compileMind = async (blobs, onProgress) => {
+  const loaded = await Promise.all(blobs.map(loadImage));
   try {
     const Compiler = await loadCompiler();
     const compiler = new Compiler();
     await compiler.compileImageTargets(
-      [img],
+      loaded.map((l) => l.img),
       (p) => onProgress && onProgress(Math.round(p)),
     );
     const buffer = await compiler.exportData();
     return new Blob([buffer], { type: "application/octet-stream" });
   } finally {
-    URL.revokeObjectURL(url);
+    loaded.forEach((l) => URL.revokeObjectURL(l.url));
   }
 };

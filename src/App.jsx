@@ -7,9 +7,24 @@ import { supabase } from "./supabase";
 const params = new URLSearchParams(window.location.search);
 const DEBUG = params.has("debug");
 const ADMIN = params.has("admin");
-const SLUG = params.get("d") || "contoh";
+const SLUG = params.get("d");
 
 async function loadDesign(slug) {
+  if (supabase && !slug) {
+    const { data, error } = await supabase
+      .from("designs")
+      .select("target_url, video_url")
+      .not("pos", "is", null)
+      .order("pos", { ascending: true });
+    if (error) console.error(error);
+    if (data && data.length) {
+      return {
+        target: data[0].target_url,
+        videos: data.map((d) => d.video_url),
+      };
+    }
+  }
+  slug = slug || "contoh";
   if (supabase) {
     const { data, error } = await supabase
       .from("designs")

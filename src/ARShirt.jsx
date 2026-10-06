@@ -8,15 +8,47 @@ const DEBUG = new URLSearchParams(window.location.search).has("debug");
 // path relatif -> ditambah BASE, URL penuh (http...) dipakai apa adanya
 const resolve = (p) => (/^https?:\/\//.test(p) ? p : BASE + p);
 
+const makePlane = (url) => {
+  const video = document.createElement("video");
+  video.src = resolve(url);
+  video.loop = true;
+  video.muted = false;
+  video.playsInline = true;
+  video.crossOrigin = "anonymous";
+  const plane = new THREE.Mesh(
+    new THREE.PlaneGeometry(1, 0.75),
+    new THREE.MeshBasicMaterial({ map: new THREE.VideoTexture(video) }),
+  );
+  video.addEventListener("loadedmetadata", () => {
+    const ratio = video.videoHeight / video.videoWidth;
+    plane.scale.set(1, ratio / 0.75, 1);
+  });
+  return { video, plane };
+};
+
 export default function ARShirt({ design, onBack }) {
   const boxRef = useRef(null);
   const [found, setFound] = useState(false);
   const [error, setError] = useState("");
   const [debug, setDebug] = useState("memulai...");
+  const [muted, setMuted] = useState(false);
+  const videosRef = useRef([]);
+  const activeRef = useRef(null);
+  const mutedRef = useRef(false);
+
+  const enableSound = () => {
+    mutedRef.current = false;
+    setMuted(false);
+    videosRef.current.forEach((v) => {
+      v.muted = false;
+    });
+    activeRef.current?.play().catch(() => {});
+  };
 
   useEffect(() => {
     let mindar;
-    let video;
+    const videos = [];
+    videosRef.current = videos;
     let timer;
     let cancelled = false;
 
@@ -34,32 +66,28 @@ export default function ARShirt({ design, onBack }) {
         });
         const { renderer, scene, camera } = mindar;
 
-        video = document.createElement("video");
-        video.src = resolve(design.video);
-        video.loop = true;
-        video.muted = true;
-        video.playsInline = true;
-        video.crossOrigin = "anonymous";
-
-        const plane = new THREE.Mesh(
-          new THREE.PlaneGeometry(1, 0.75),
-          new THREE.MeshBasicMaterial({ map: new THREE.VideoTexture(video) }),
-        );
-        video.addEventListener("loadedmetadata", () => {
-          const ratio = video.videoHeight / video.videoWidth;
-          plane.scale.set(1, ratio / 0.75, 1);
+        const urls = design.videos || [design.video];
+        urls.forEach((url, i) => {
+          const { video, plane } = makePlane(url);
+          videos.push(video);
+          const anchor = mindar.addAnchor(i);
+          anchor.group.add(plane);
+          anchor.onTargetFound = () => {
+            activeRef.current = video;
+            video.muted = mutedRef.current;
+            video.play().catch(() => {
+              mutedRef.current = true;
+              setMuted(true);
+              video.muted = true;
+              video.play().catch(() => {});
+            });
+            setFound(true);
+          };
+          anchor.onTargetLost = () => {
+            video.pause();
+            setFound(false);
+          };
         });
-
-        const anchor = mindar.addAnchor(0);
-        anchor.group.add(plane);
-        anchor.onTargetFound = () => {
-          video.play();
-          setFound(true);
-        };
-        anchor.onTargetLost = () => {
-          video.pause();
-          setFound(false);
-        };
 
         await mindar.start();
         if (cancelled) {
@@ -95,13 +123,18 @@ export default function ARShirt({ design, onBack }) {
         mindar?.renderer.setAnimationLoop(null);
         mindar?.stop();
       } catch {}
-      video?.pause();
+      videos.forEach((v) => v.pause());
     };
   }, [design]);
 
   return (
     <div className="ar-wrap">
       <div ref={boxRef} className="ar-box" />
+      {muted && !error && (
+        <button className="ar-sound" onClick={enableSound}>
+          Nyalakan suara
+        </button>
+      )}
       {error && (
         <div className="ar-overlay">
           <p className="ar-error">{error}</p>

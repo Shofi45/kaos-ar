@@ -205,3 +205,215 @@ body {
   max-width: 360px;
   margin: 0;
 }
+:root {
+  --bg: #0a0612;
+  --panel: #140d22;
+  --panel-2: #1b1230;
+  --line: rgba(168, 85, 247, 0.28);
+  --text: #f3eefc;
+  --muted: #9d8fbd;
+  --p1: #a855f7;
+  --p2: #7c3aed;
+  --p3: #c084fc;
+  --glow: 0 0 24px rgba(168, 85, 247, 0.45);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.ar-overlay {
+  background:
+    radial-gradient(
+      600px 400px at 50% 0%,
+      rgba(124, 58, 237, 0.35),
+      transparent 70%
+    ),
+    radial-gradient(
+      500px 400px at 100% 100%,
+      rgba(168, 85, 247, 0.2),
+      transparent 70%
+    ),
+    var(--bg);
+}
+.ar-overlay h1 {
+  margin: 0;
+  font-size: 42px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, #e9d5ff, var(--p1) 60%, var(--p2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.ar-overlay p {
+  margin: 0;
+  color: var(--muted);
+  max-width: 280px;
+  line-height: 1.5;
+}
+.ar-overlay button,
+.test-log button {
+  background: linear-gradient(135deg, var(--p1), var(--p2));
+  color: #fff;
+  box-shadow: var(--glow);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.ar-overlay button:active,
+.test-log button:active {
+  transform: scale(0.96);
+}
+.ar-overlay button:disabled {
+  opacity: 0.5;
+  box-shadow: none;
+}
+.ar-overlay button.ghost {
+  background: transparent;
+  color: var(--p3);
+  border: 1px solid var(--line);
+  box-shadow: none;
+}
+.ar-hint {
+  color: #f3eefc;
+  text-shadow: 0 2px 10px rgba(124, 58, 237, 0.9);
+}
+.test-log {
+  background: rgba(10, 6, 18, 0.85);
+  border-top: 1px solid var(--line);
+}
+
+.admin {
+  background:
+    radial-gradient(
+      700px 420px at 50% -10%,
+      rgba(124, 58, 237, 0.3),
+      transparent 70%
+    ),
+    var(--bg);
+  color: var(--text);
+}
+.admin h2,
+.admin h3 {
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+.admin h2 {
+  background: linear-gradient(135deg, #e9d5ff, var(--p1));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.admin .card {
+  background: linear-gradient(160deg, var(--panel-2), var(--panel));
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+.admin input[type="text"],
+.admin input[type="email"],
+.admin input[type="password"],
+.admin input:not([type]) {
+  background: #0d0818;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.admin input::placeholder {
+  color: #6f628f;
+}
+.admin input:focus {
+  border-color: var(--p1);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.25);
+}
+.admin label {
+  color: var(--muted);
+}
+.admin input[type="file"] {
+  color: var(--muted);
+  font-size: 13px;
+}
+.admin input[type="file"]::file-selector-button {
+  margin-right: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-2);
+  color: var(--p3);
+  cursor: pointer;
+}
+.admin button {
+  background: linear-gradient(135deg, var(--p1), var(--p2));
+  border-radius: 12px;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.4);
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.admin button:hover {
+  box-shadow: var(--glow);
+}
+.admin button:active {
+  transform: scale(0.97);
+}
+.admin button.danger {
+  background: linear-gradient(135deg, #f43f5e, #be123c);
+  box-shadow: 0 4px 16px rgba(244, 63, 94, 0.3);
+}
+.admin .err {
+  color: #fb7185;
+}
+.admin .hint {
+  color: #7d70a0;
+}
+.admin code {
+  color: var(--p3);
+  background: #0d0818;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+.admin .on {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.12);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.admin .off {
+  color: var(--muted);
+  background: rgba(157, 143, 189, 0.12);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.admin .modal {
+  background: rgba(5, 2, 12, 0.8);
+  backdrop-filter: blur(6px);
+}
+.admin a {
+  color: var(--p3);
+}
+.ar-sound {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 20;
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(20, 13, 34, 0.85);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  backdrop-filter: blur(6px);
+  box-shadow: var(--glow);
+}

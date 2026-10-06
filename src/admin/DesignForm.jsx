@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { slugOk } from "./constants";
 import { saveDesign } from "./api";
-import { compileMind } from "./compileMind";
 
 export default function DesignForm({ list, onSaved }) {
   const [slug, setSlug] = useState("");
   const [title, setTitle] = useState("");
-  const [targetFile, setTargetFile] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
   const [videoFile, setVideoFile] = useState(null);
   const [fileKey, setFileKey] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -18,16 +17,16 @@ export default function DesignForm({ list, onSaved }) {
     const s = slug.trim();
     if (!slugOk(s)) {
       return setMsg(
-        "Slug hanya huruf kecil, angka, dan tanda hubung. Contoh: naga-merah",
+        "Nama hanya huruf kecil, angka, dan tanda hubung. Contoh: naga-merah",
       );
     }
     const old = list.find((d) => d.slug === s);
-    if (!old && (!targetFile || !videoFile)) {
+    if (!old && (!imageFile || !videoFile)) {
       return setMsg(
         "Desain baru butuh gambar desain (PNG/JPG) dan video (.mp4).",
       );
     }
-    if (targetFile && !/\.(png|jpe?g)$/i.test(targetFile.name)) {
+    if (imageFile && !/\.(png|jpe?g)$/i.test(imageFile.name)) {
       return setMsg("Gambar harus berformat PNG atau JPG");
     }
     if (videoFile && !videoFile.name.toLowerCase().endsWith(".mp4")) {
@@ -44,25 +43,19 @@ export default function DesignForm({ list, onSaved }) {
 
     setBusy(true);
     try {
-      let mindFile = null;
-      if (targetFile) {
-        setProgress("Memproses gambar 0%");
-        mindFile = await compileMind(targetFile, (p) =>
-          setProgress(`Memproses gambar ${p}%`),
-        );
-        setProgress("Mengunggah...");
-      }
+      setProgress("Mengunggah...");
       await saveDesign({
         slug: s,
         title,
-        targetFile: mindFile,
+        imageFile,
         videoFile,
         old,
+        onProgress: (p) => setProgress(`Memproses gambar ${p}%`),
       });
       setMsg(`Tersimpan: ${s}`);
       setSlug("");
       setTitle("");
-      setTargetFile(null);
+      setImageFile(null);
       setVideoFile(null);
       setFileKey((k) => k + 1);
       onSaved();
@@ -78,7 +71,7 @@ export default function DesignForm({ list, onSaved }) {
     <div className="card">
       <h3>Tambah / ganti desain</h3>
       <input
-        placeholder="Slug, contoh: naga-merah"
+        placeholder="Nama desain, contoh: naga-merah"
         value={slug}
         onChange={(e) => setSlug(e.target.value)}
       />
@@ -93,7 +86,7 @@ export default function DesignForm({ list, onSaved }) {
           key={"t" + fileKey}
           type="file"
           accept="image/png,image/jpeg"
-          onChange={(e) => setTargetFile(e.target.files[0] || null)}
+          onChange={(e) => setImageFile(e.target.files[0] || null)}
         />
       </label>
       <label>
@@ -110,8 +103,8 @@ export default function DesignForm({ list, onSaved }) {
       </button>
       {msg && <p className="err">{msg}</p>}
       <p className="hint">
-        Slug yang sudah ada = ganti file (boleh hanya salah satu). Link dan QR
-        lama tetap berlaku.
+        Nama yang sudah ada = ganti file (boleh hanya salah satu). Semua desain
+        dipakai lewat satu link yang sama.
       </p>
     </div>
   );
