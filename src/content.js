@@ -91,6 +91,9 @@ export const DEFAULTS = {
     lead: "Cuplikan desain dan momen bersama Zayfen.",
     emptyText: "Belum ada gambar.",
   },
+  kategori: {
+    list: [],
+  },
   pengaturan: {
     brand: "Zayfen",
     footerText:

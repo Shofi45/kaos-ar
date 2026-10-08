@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { fetchContent } from "../content";
 import {
   removeProduct,
   rupiah,
@@ -19,6 +20,11 @@ function ProductForm({ designs, editing, onSaved, onCancel }) {
   const [imageFile, setImageFile] = useState(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
+  const [kategori, setKategori] = useState([]);
+
+  useEffect(() => {
+    fetchContent("kategori", true).then((c) => setKategori(c.list || []));
+  }, []);
 
   const submit = async () => {
     setMsg("");
@@ -80,11 +86,25 @@ function ProductForm({ designs, editing, onSaved, onCancel }) {
         value={oldPrice}
         onChange={(e) => setOldPrice(e.target.value)}
       />
-      <input
-        placeholder="Kategori, contoh: Apparel atau Sovenir"
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-      />
+      <label>
+        Kategori
+        <select value={category} onChange={(e) => setCategory(e.target.value)}>
+          <option value="">Tanpa kategori</option>
+          {kategori.map((k) => (
+            <option key={k} value={k}>
+              {k}
+            </option>
+          ))}
+          {category && !kategori.includes(category) && (
+            <option value={category}>{category} (belum terdaftar)</option>
+          )}
+        </select>
+        {!kategori.length && (
+          <small className="hint">
+            Belum ada kategori. Tambahkan di menu Kategori.
+          </small>
+        )}
+      </label>
       <input
         placeholder="Link Shopee (https://...)"
         value={shopee}

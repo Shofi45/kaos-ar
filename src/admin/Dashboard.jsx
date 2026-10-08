@@ -6,6 +6,7 @@ import ProductsTab from "./ProductsTab";
 import ContentPage from "./ContentPage";
 import { META, VIEWS } from "./contentSchemas";
 import GalleryTab from "./GalleryTab";
+import CategoriesTab from "./CategoriesTab";
 import { KATALOG_URL } from "../config";
 
 const ICONS = {
@@ -24,6 +25,7 @@ const ICONS = {
   book: "M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11",
   mail: "M4 6h16v12H4zM4 7l8 6 8-6",
   sliders: "M4 7h9M17 7h3M4 17h3M11 17h9M15 5v4M9 15v4",
+  tag: "M3 12V4h8l10 10-8 8zM7.5 8h.01",
 };
 
 const Icon = ({ name }) => (
@@ -45,6 +47,7 @@ const NAV = [
   { id: "home", label: "Dashboard", icon: "home" },
   { id: "desain", label: "Desain AR", icon: "design" },
   { id: "produk", label: "Produk", icon: "bag" },
+  { id: "kategori", label: "Kategori", icon: "tag" },
   { id: "galeri", label: "Galeri", icon: "image" },
   { id: "c-home", label: META.home.label, icon: "doc", section: "Konten situs" },
   { id: "c-tentang", label: META.tentang.label, icon: "info", section: "Konten situs" },
@@ -63,6 +66,7 @@ const SUBTITLE = {
   home: "Ringkasan desain AR dan produk brand kamu",
   desain: "Kelola gambar target dan video tiap desain",
   produk: "Kelola katalog produk dan link pembelian",
+  kategori: "Atur daftar kategori untuk produk",
   galeri: "Kelola teks halaman dan gambar di Galeri",
   "c-home": META.home.subtitle,
   "c-tentang": META.tentang.subtitle,
@@ -317,6 +321,7 @@ export default function Dashboard({ user }) {
               onError={setMsg}
             />
           )}
+          {tab === "kategori" && <CategoriesTab onError={setMsg} />}
           {tab === "desain" && (
             <DesignsTab
               designs={designs}
