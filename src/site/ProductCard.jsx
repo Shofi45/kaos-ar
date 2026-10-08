@@ -17,6 +17,12 @@ export default function ProductCard({ p }) {
       <div className="kbody">
         {p.category && <small>{p.category}</small>}
         <strong>{p.name}</strong>
+        {(p.print_type || p.fabric) && (
+          <div className="kmeta">
+            {p.print_type && <span>{p.print_type}</span>}
+            {p.fabric && <span>{p.fabric}</span>}
+          </div>
+        )}
         <div className="kprice">
           <b>{rupiah(p.price)}</b>
           {off > 0 && <s>{rupiah(p.old_price)}</s>}

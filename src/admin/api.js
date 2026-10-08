@@ -149,6 +149,8 @@ export const saveProduct = async (p) => {
     price: p.price,
     old_price: p.old_price,
     category: p.category,
+    fabric: p.fabric || "",
+    print_type: p.print_type || "",
     image_url,
     shopee_url: p.shopee_url,
     design_slug: p.design_slug || null,

@@ -28,16 +28,41 @@ export const DEFAULTS = {
     featuredNote: "Pilihan terbaru dari Zayfen.",
     featuresTitle: "Kenapa Zayfen?",
     features: [
-      { title: "Efek AR", text: "Desain di kaos bergerak lewat kamera HP.", icon: "ar" },
-      { title: "Tanpa aplikasi", text: "Cukup browser, tidak perlu unduh apa pun.", icon: "phone" },
-      { title: "Koleksi dan hadiah", text: "Scan semua desain, dapatkan kode diskon.", icon: "star" },
-      { title: "Beli di Shopee", text: "Pesanan aman lewat toko resmi kami.", icon: "bag" },
+      {
+        title: "Efek AR",
+        text: "Desain di kaos bergerak lewat kamera HP.",
+        icon: "ar",
+      },
+      {
+        title: "Tanpa aplikasi",
+        text: "Cukup browser, tidak perlu unduh apa pun.",
+        icon: "phone",
+      },
+      {
+        title: "Koleksi dan hadiah",
+        text: "Scan semua desain, dapatkan kode diskon.",
+        icon: "star",
+      },
+      {
+        title: "Beli di Shopee",
+        text: "Pesanan aman lewat toko resmi kami.",
+        icon: "bag",
+      },
     ],
     stepsTitle: "Cara kerja",
     steps: [
-      { title: "Pilih kaos", text: "Pilih desain kaos atau merchandise Zayfen yang kamu suka." },
-      { title: "Scan desainnya", text: "Buka kamera lewat tombol Scan AR, lalu arahkan ke gambar di kaos." },
-      { title: "Lihat jadi hidup", text: "Animasi muncul di atas desain. Kumpulkan semua desain untuk dapat hadiah." },
+      {
+        title: "Pilih kaos",
+        text: "Pilih desain kaos atau merchandise Zayfen yang kamu suka.",
+      },
+      {
+        title: "Scan desainnya",
+        text: "Buka kamera lewat tombol Scan AR, lalu arahkan ke gambar di kaos.",
+      },
+      {
+        title: "Lihat jadi hidup",
+        text: "Animasi muncul di atas desain. Kumpulkan semua desain untuk dapat hadiah.",
+      },
     ],
     phoneTitle: "Langsung dari kamera HP",
     phoneText:
@@ -50,14 +75,27 @@ export const DEFAULTS = {
     title: "Tentang Zayfen",
     lead: "Brand kaos dan merchandise yang memadukan desain dengan teknologi AR.",
     paragraphs: [
-      { text: "Zayfen berawal dari ide sederhana: kaos tidak harus diam. Dengan teknologi augmented reality, gambar di kaos bisa bergerak dan bercerita lewat kamera HP." },
-      { text: "Setiap produk kami punya desain yang bisa discan. Kamu bisa mengoleksi semua desain dan mendapat hadiah khusus." },
+      {
+        text: "Zayfen berawal dari ide sederhana: kaos tidak harus diam. Dengan teknologi augmented reality, gambar di kaos bisa bergerak dan bercerita lewat kamera HP.",
+      },
+      {
+        text: "Setiap produk kami punya desain yang bisa discan. Kamu bisa mengoleksi semua desain dan mendapat hadiah khusus.",
+      },
     ],
     valuesTitle: "Yang kami pegang",
     values: [
-      { title: "Desain jadi hidup", text: "Setiap desain punya animasi sendiri yang muncul saat discan." },
-      { title: "Mudah dipakai", text: "Tanpa aplikasi tambahan. Cukup kamera HP dan browser." },
-      { title: "Dibuat dengan teliti", text: "Dari desain sampai cetak, kami perhatikan detailnya." },
+      {
+        title: "Desain jadi hidup",
+        text: "Setiap desain punya animasi sendiri yang muncul saat discan.",
+      },
+      {
+        title: "Mudah dipakai",
+        text: "Tanpa aplikasi tambahan. Cukup kamera HP dan browser.",
+      },
+      {
+        title: "Dibuat dengan teliti",
+        text: "Dari desain sampai cetak, kami perhatikan detailnya.",
+      },
     ],
   },
   dokumentasi: {
@@ -65,16 +103,37 @@ export const DEFAULTS = {
     lead: "Cara memakai Scan AR dan jawaban untuk pertanyaan yang sering muncul.",
     stepsTitle: "Langkah singkat",
     steps: [
-      { title: "Buka Scan AR", text: "Buka link Scan AR atau scan QR yang ada di kaos." },
-      { title: "Izinkan kamera", text: "Tekan Izinkan saat browser meminta akses kamera." },
-      { title: "Arahkan ke desain", text: "Arahkan kamera ke gambar di kaos sampai videonya muncul." },
+      {
+        title: "Buka Scan AR",
+        text: "Buka link Scan AR atau scan QR yang ada di kaos.",
+      },
+      {
+        title: "Izinkan kamera",
+        text: "Tekan Izinkan saat browser meminta akses kamera.",
+      },
+      {
+        title: "Arahkan ke desain",
+        text: "Arahkan kamera ke gambar di kaos sampai videonya muncul.",
+      },
     ],
     faqTitle: "Pertanyaan umum",
     faq: [
-      { title: "Kamera tidak menyala", text: "Pastikan izin kamera diaktifkan di browser dan tidak sedang dipakai aplikasi lain seperti Zoom atau WhatsApp." },
-      { title: "Video tidak ada suaranya", text: "Tekan tombol Nyalakan suara yang muncul di layar." },
-      { title: "Video hilang saat kamera bergeser", text: "Tekan Tahan video agar video tetap tampil, lalu Tutup video kalau sudah selesai." },
-      { title: "Apakah butuh internet?", text: "Ya, video dimuat lewat internet, jadi gunakan WiFi atau kuota yang cukup." },
+      {
+        title: "Kamera tidak menyala",
+        text: "Pastikan izin kamera diaktifkan di browser dan tidak sedang dipakai aplikasi lain seperti Zoom atau WhatsApp.",
+      },
+      {
+        title: "Video tidak ada suaranya",
+        text: "Tekan tombol Nyalakan suara yang muncul di layar.",
+      },
+      {
+        title: "Video hilang saat kamera bergeser",
+        text: "Tekan Tahan video agar video tetap tampil, lalu Tutup video kalau sudah selesai.",
+      },
+      {
+        title: "Apakah butuh internet?",
+        text: "Ya, video dimuat lewat internet, jadi gunakan WiFi atau kuota yang cukup.",
+      },
     ],
   },
   kontak: {
@@ -93,6 +152,19 @@ export const DEFAULTS = {
   },
   kategori: {
     list: [],
+  },
+  kain: {
+    list: [
+      "Cotton Combed 30s",
+      "Cotton Combed 24s",
+      "Cotton Combed 20s",
+      "Cotton Carded",
+      "Polyester (Dri-Fit)",
+      "Cotton Bamboo",
+    ],
+  },
+  print: {
+    list: ["DTF", "DTG", "Full Print (Sublimasi)", "Sablon Manual", "Bordir"],
   },
   pengaturan: {
     brand: "Zayfen",

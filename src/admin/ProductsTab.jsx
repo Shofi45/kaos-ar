@@ -8,6 +8,30 @@ import {
   visible,
 } from "./api";
 
+function OptionSelect({ label, value, onChange, options, menu }) {
+  return (
+    <label>
+      {label}
+      <select value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value="">Tidak dipilih</option>
+        {options.map((k) => (
+          <option key={k} value={k}>
+            {k}
+          </option>
+        ))}
+        {value && !options.includes(value) && (
+          <option value={value}>{value} (belum terdaftar)</option>
+        )}
+      </select>
+      {!options.length && (
+        <small className="hint">
+          Belum ada pilihan. Tambahkan di menu {menu}.
+        </small>
+      )}
+    </label>
+  );
+}
+
 function ProductForm({ designs, editing, onSaved, onCancel }) {
   const [name, setName] = useState(editing?.name || "");
   const [price, setPrice] = useState(editing ? String(editing.price) : "");
@@ -21,9 +45,15 @@ function ProductForm({ designs, editing, onSaved, onCancel }) {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
   const [kategori, setKategori] = useState([]);
+  const [fabric, setFabric] = useState(editing?.fabric || "");
+  const [printType, setPrintType] = useState(editing?.print_type || "");
+  const [kainList, setKainList] = useState([]);
+  const [printList, setPrintList] = useState([]);
 
   useEffect(() => {
     fetchContent("kategori", true).then((c) => setKategori(c.list || []));
+    fetchContent("kain", true).then((c) => setKainList(c.list || []));
+    fetchContent("print", true).then((c) => setPrintList(c.list || []));
   }, []);
 
   const submit = async () => {
@@ -54,6 +84,8 @@ function ProductForm({ designs, editing, onSaved, onCancel }) {
         price: Number(price.trim()),
         old_price: oldPrice.trim() ? Number(oldPrice.trim()) : null,
         category: category.trim(),
+        fabric,
+        print_type: printType,
         shopee_url: shopee.trim(),
         design_slug: designSlug,
         imageFile,
@@ -105,6 +137,20 @@ function ProductForm({ designs, editing, onSaved, onCancel }) {
           </small>
         )}
       </label>
+      <OptionSelect
+        label="Jenis print"
+        value={printType}
+        onChange={setPrintType}
+        options={printList}
+        menu="Jenis print"
+      />
+      <OptionSelect
+        label="Jenis kain"
+        value={fabric}
+        onChange={setFabric}
+        options={kainList}
+        menu="Jenis kain"
+      />
       <input
         placeholder="Link Shopee (https://...)"
         value={shopee}
@@ -158,6 +204,8 @@ function ProductItem({ product, onEdit, onToggle, onRemove }) {
             <div className="hint">
               {rupiah(product.price)}
               {product.category ? ` • ${product.category}` : ""}
+              {product.print_type ? ` • ${product.print_type}` : ""}
+              {product.fabric ? ` • ${product.fabric}` : ""}
               {product.design_slug ? ` • AR: ${product.design_slug}` : ""}
             </div>
           </div>

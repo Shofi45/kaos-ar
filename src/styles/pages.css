@@ -1,5 +1,5 @@
 .pg {
-  max-width: 960px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 0 16px 56px;
 }
@@ -790,4 +790,16 @@
   .kt-side.open {
     display: block;
   }
+}
+.kmeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.kmeta span {
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 12px;
 }

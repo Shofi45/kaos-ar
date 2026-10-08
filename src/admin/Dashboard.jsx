@@ -7,6 +7,7 @@ import ContentPage from "./ContentPage";
 import { META, VIEWS } from "./contentSchemas";
 import GalleryTab from "./GalleryTab";
 import CategoriesTab from "./CategoriesTab";
+import OptionsTab from "./OptionsTab";
 import { KATALOG_URL } from "../config";
 
 const ICONS = {
@@ -26,6 +27,8 @@ const ICONS = {
   mail: "M4 6h16v12H4zM4 7l8 6 8-6",
   sliders: "M4 7h9M17 7h3M4 17h3M11 17h9M15 5v4M9 15v4",
   tag: "M3 12V4h8l10 10-8 8zM7.5 8h.01",
+  shirt: "M8 3 3 6l2 4 2-1v12h10V9l2 1 2-4-5-3a4 4 0 0 1-8 0z",
+  printer: "M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7z",
 };
 
 const Icon = ({ name }) => (
@@ -48,12 +51,39 @@ const NAV = [
   { id: "desain", label: "Desain AR", icon: "design" },
   { id: "produk", label: "Produk", icon: "bag" },
   { id: "kategori", label: "Kategori", icon: "tag" },
+  { id: "kain", label: "Jenis kain", icon: "shirt" },
+  { id: "print", label: "Jenis print", icon: "printer" },
   { id: "galeri", label: "Galeri", icon: "image" },
-  { id: "c-home", label: META.home.label, icon: "doc", section: "Konten situs" },
-  { id: "c-tentang", label: META.tentang.label, icon: "info", section: "Konten situs" },
-  { id: "c-dokumentasi", label: META.dokumentasi.label, icon: "book", section: "Konten situs" },
-  { id: "c-kontak", label: META.kontak.label, icon: "mail", section: "Konten situs" },
-  { id: "c-pengaturan", label: META.pengaturan.label, icon: "sliders", section: "Konten situs" },
+  {
+    id: "c-home",
+    label: META.home.label,
+    icon: "doc",
+    section: "Konten situs",
+  },
+  {
+    id: "c-tentang",
+    label: META.tentang.label,
+    icon: "info",
+    section: "Konten situs",
+  },
+  {
+    id: "c-dokumentasi",
+    label: META.dokumentasi.label,
+    icon: "book",
+    section: "Konten situs",
+  },
+  {
+    id: "c-kontak",
+    label: META.kontak.label,
+    icon: "mail",
+    section: "Konten situs",
+  },
+  {
+    id: "c-pengaturan",
+    label: META.pengaturan.label,
+    icon: "sliders",
+    section: "Konten situs",
+  },
 ];
 
 const FILTERS = [
@@ -67,6 +97,8 @@ const SUBTITLE = {
   desain: "Kelola gambar target dan video tiap desain",
   produk: "Kelola katalog produk dan link pembelian",
   kategori: "Atur daftar kategori untuk produk",
+  kain: "Atur pilihan jenis kain untuk produk",
+  print: "Atur pilihan jenis print untuk produk",
   galeri: "Kelola teks halaman dan gambar di Galeri",
   "c-home": META.home.subtitle,
   "c-tentang": META.tentang.subtitle,
@@ -322,6 +354,28 @@ export default function Dashboard({ user }) {
             />
           )}
           {tab === "kategori" && <CategoriesTab onError={setMsg} />}
+          {tab === "kain" && (
+            <OptionsTab
+              key="kain"
+              storeKey="kain"
+              column="fabric"
+              itemName="jenis kain"
+              placeholder="Contoh: Cotton Combed 30s"
+              subtitle="Jenis kain dipilih saat menambah atau mengubah produk."
+              onError={setMsg}
+            />
+          )}
+          {tab === "print" && (
+            <OptionsTab
+              key="print"
+              storeKey="print"
+              column="print_type"
+              itemName="jenis print"
+              placeholder="Contoh: DTF"
+              subtitle="Jenis print dipilih saat menambah atau mengubah produk."
+              onError={setMsg}
+            />
+          )}
           {tab === "desain" && (
             <DesignsTab
               designs={designs}
