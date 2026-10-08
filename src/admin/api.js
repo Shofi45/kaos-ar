@@ -147,6 +147,7 @@ export const saveProduct = async (p) => {
     id,
     name: p.name,
     price: p.price,
+    old_price: p.old_price,
     category: p.category,
     image_url,
     shopee_url: p.shopee_url,
@@ -162,4 +163,32 @@ export const toggleProduct = (p) =>
 export const removeProduct = async (p) => {
   await supabase.storage.from(BUCKET).remove([`products/${p.id}/image`]);
   return supabase.from("products").delete().eq("id", p.id);
+};
+export const fetchGallery = () =>
+  supabase
+    .from("gallery")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+export const saveGalleryItem = async (g) => {
+  const id = g.old?.id || crypto.randomUUID();
+  const image_url = g.imageFile
+    ? await uploadFile(`gallery/${id}/image`, g.imageFile, g.imageFile.type)
+    : g.old.image_url;
+
+  const { error } = await supabase.from("gallery").upsert({
+    id,
+    title: g.title,
+    image_url,
+    active: g.old ? g.old.active : true,
+  });
+  if (error) throw error;
+};
+
+export const toggleGallery = (g) =>
+  supabase.from("gallery").update({ active: !g.active }).eq("id", g.id);
+
+export const removeGallery = async (g) => {
+  await supabase.storage.from(BUCKET).remove([`gallery/${g.id}/image`]);
+  return supabase.from("gallery").delete().eq("id", g.id);
 };

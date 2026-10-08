@@ -10,6 +10,7 @@ export const MENU = [
   { label: "Home", path: "/" },
   { label: "Katalog", path: "/katalog" },
   { label: "Tentang", path: "/tentang" },
+  { label: "Galeri", path: "/galeri" },
   { label: "Dokumentasi", path: "/dokumentasi" },
   { label: "Kontak", path: "/kontak" },
 ];

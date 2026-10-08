@@ -4,6 +4,7 @@ import { fetchDesigns, fetchProducts, rupiah } from "./api";
 import DesignsTab from "./DesignsTab";
 import ProductsTab from "./ProductsTab";
 import ContentTab from "./ContentTab";
+import GalleryTab from "./GalleryTab";
 import { KATALOG_URL } from "../config";
 
 const ICONS = {
@@ -17,6 +18,7 @@ const ICONS = {
   menu: "M4 6h16M4 12h16M4 18h16",
   close: "M6 6l12 12M18 6 6 18",
   doc: "M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6",
+  image: "M4 5h16v14H4zM4 16l5-5 4 4 3-3 4 4M9 9h.01",
 };
 
 const Icon = ({ name }) => (
@@ -38,6 +40,7 @@ const NAV = [
   { id: "home", label: "Dashboard", icon: "home" },
   { id: "desain", label: "Desain AR", icon: "design" },
   { id: "produk", label: "Produk", icon: "bag" },
+  { id: "galeri", label: "Galeri", icon: "image" },
   { id: "konten", label: "Konten", icon: "doc" },
 ];
 
@@ -51,6 +54,7 @@ const SUBTITLE = {
   home: "Ringkasan desain AR dan produk brand kamu",
   desain: "Kelola gambar target dan video tiap desain",
   produk: "Kelola katalog produk dan link pembelian",
+  galeri: "Kelola gambar yang tampil di halaman Galeri",
   konten: "Ubah isi Home, Tentang, Dokumentasi, dan Kontak",
 };
 
@@ -275,6 +279,7 @@ export default function Dashboard({ user }) {
           {tab === "home" && (
             <Home designs={designs} products={products} onTab={go} />
           )}
+          {tab === "galeri" && <GalleryTab onError={setMsg} />}
           {tab === "konten" && <ContentTab onError={setMsg} />}
           {tab === "desain" && (
             <DesignsTab

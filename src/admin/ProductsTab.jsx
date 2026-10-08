@@ -11,6 +11,9 @@ function ProductForm({ designs, editing, onSaved, onCancel }) {
   const [name, setName] = useState(editing?.name || "");
   const [price, setPrice] = useState(editing ? String(editing.price) : "");
   const [category, setCategory] = useState(editing?.category || "");
+  const [oldPrice, setOldPrice] = useState(
+    editing?.old_price ? String(editing.old_price) : "",
+  );
   const [shopee, setShopee] = useState(editing?.shopee_url || "");
   const [designSlug, setDesignSlug] = useState(editing?.design_slug || "");
   const [imageFile, setImageFile] = useState(null);
@@ -22,6 +25,13 @@ function ProductForm({ designs, editing, onSaved, onCancel }) {
     if (!name.trim()) return setMsg("Nama produk wajib diisi.");
     if (!/^\d+$/.test(price.trim()))
       return setMsg("Harga harus angka saja. Contoh: 85000");
+    if (
+      oldPrice.trim() &&
+      (!/^\d+$/.test(oldPrice.trim()) ||
+        Number(oldPrice.trim()) <= Number(price.trim()))
+    ) {
+      return setMsg("Harga coret harus angka dan lebih besar dari harga jual.");
+    }
     if (shopee.trim() && !/^https?:\/\//.test(shopee.trim())) {
       return setMsg("Link Shopee harus diawali https://");
     }
@@ -36,6 +46,7 @@ function ProductForm({ designs, editing, onSaved, onCancel }) {
         old: editing,
         name: name.trim(),
         price: Number(price.trim()),
+        old_price: oldPrice.trim() ? Number(oldPrice.trim()) : null,
         category: category.trim(),
         shopee_url: shopee.trim(),
         design_slug: designSlug,
@@ -62,6 +73,12 @@ function ProductForm({ designs, editing, onSaved, onCancel }) {
         inputMode="numeric"
         value={price}
         onChange={(e) => setPrice(e.target.value)}
+      />
+      <input
+        placeholder="Harga coret (opsional), contoh: 120000"
+        inputMode="numeric"
+        value={oldPrice}
+        onChange={(e) => setOldPrice(e.target.value)}
       />
       <input
         placeholder="Kategori, contoh: Apparel atau Sovenir"

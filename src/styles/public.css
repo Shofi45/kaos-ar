@@ -258,6 +258,16 @@ body {
   margin: 0 auto;
 }
 
+.pgrid .card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: linear-gradient(160deg, var(--panel-2), var(--panel));
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+
 .pimg {
   position: relative;
   aspect-ratio: 1 / 1;

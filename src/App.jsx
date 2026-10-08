@@ -7,6 +7,7 @@ import Home from "./pages/Home";
 import Tentang from "./pages/Tentang";
 import Dokumentasi from "./pages/Dokumentasi";
 import Kontak from "./pages/Kontak";
+import Galeri from "./pages/Galeri";
 import { KATALOG_URL, SITE_URL } from "./config";
 import { supabase } from "./supabase";
 
@@ -26,6 +27,7 @@ const PAGES = {
   "/": Home,
   "/tentang": Tentang,
   "/dokumentasi": Dokumentasi,
+  "/galeri": Galeri,
   "/kontak": Kontak,
 };
 
