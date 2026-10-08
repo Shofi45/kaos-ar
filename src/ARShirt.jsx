@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { MindARThree } from "mind-ar/dist/mindar-image-three.prod.js";
-import { REWARD_CODE, REWARD_TEXT } from "./config";
+import { useContent } from "./content";
 const BASE = import.meta.env.BASE_URL;
 const DEBUG = new URLSearchParams(window.location.search).has("debug");
 
@@ -28,6 +28,7 @@ const makePlane = (url) => {
 
 export default function ARShirt({ design, onBack }) {
   const boxRef = useRef(null);
+  const pengaturan = useContent("pengaturan");
   const [found, setFound] = useState(false);
   const [error, setError] = useState("");
   const [debug, setDebug] = useState("memulai...");
@@ -188,8 +189,8 @@ export default function ARShirt({ design, onBack }) {
       {total > 1 && count >= total && !hideReward && !error && (
         <div className="ar-reward">
           <strong>Selamat!</strong>
-          <p>{REWARD_TEXT}</p>
-          <code>{REWARD_CODE}</code>
+          <p>{pengaturan.rewardText}</p>
+          <code>{pengaturan.rewardCode}</code>
           <button className="small" onClick={() => setHideReward(true)}>
             Tutup
           </button>

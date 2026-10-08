@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { supabase } from "../supabase";
 import { fetchDesigns, fetchProducts, rupiah } from "./api";
 import DesignsTab from "./DesignsTab";
 import ProductsTab from "./ProductsTab";
-import ContentTab from "./ContentTab";
+import ContentPage from "./ContentPage";
+import { META, VIEWS } from "./contentSchemas";
 import GalleryTab from "./GalleryTab";
 import { KATALOG_URL } from "../config";
 
@@ -19,6 +20,10 @@ const ICONS = {
   close: "M6 6l12 12M18 6 6 18",
   doc: "M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6",
   image: "M4 5h16v14H4zM4 16l5-5 4 4 3-3 4 4M9 9h.01",
+  info: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 11v5M12 8h.01",
+  book: "M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11",
+  mail: "M4 6h16v12H4zM4 7l8 6 8-6",
+  sliders: "M4 7h9M17 7h3M4 17h3M11 17h9M15 5v4M9 15v4",
 };
 
 const Icon = ({ name }) => (
@@ -41,7 +46,11 @@ const NAV = [
   { id: "desain", label: "Desain AR", icon: "design" },
   { id: "produk", label: "Produk", icon: "bag" },
   { id: "galeri", label: "Galeri", icon: "image" },
-  { id: "konten", label: "Konten", icon: "doc" },
+  { id: "c-home", label: META.home.label, icon: "doc", section: "Konten situs" },
+  { id: "c-tentang", label: META.tentang.label, icon: "info", section: "Konten situs" },
+  { id: "c-dokumentasi", label: META.dokumentasi.label, icon: "book", section: "Konten situs" },
+  { id: "c-kontak", label: META.kontak.label, icon: "mail", section: "Konten situs" },
+  { id: "c-pengaturan", label: META.pengaturan.label, icon: "sliders", section: "Konten situs" },
 ];
 
 const FILTERS = [
@@ -54,8 +63,12 @@ const SUBTITLE = {
   home: "Ringkasan desain AR dan produk brand kamu",
   desain: "Kelola gambar target dan video tiap desain",
   produk: "Kelola katalog produk dan link pembelian",
-  galeri: "Kelola gambar yang tampil di halaman Galeri",
-  konten: "Ubah isi Home, Tentang, Dokumentasi, dan Kontak",
+  galeri: "Kelola teks halaman dan gambar di Galeri",
+  "c-home": META.home.subtitle,
+  "c-tentang": META.tentang.subtitle,
+  "c-dokumentasi": META.dokumentasi.subtitle,
+  "c-kontak": META.kontak.subtitle,
+  "c-pengaturan": META.pengaturan.subtitle,
 };
 
 function Status({ active }) {
@@ -161,6 +174,7 @@ export default function Dashboard({ user }) {
     setTab(id);
     setFilter("all");
     setQ("");
+    setMsg("");
     setOpen(false);
   };
 
@@ -183,15 +197,19 @@ export default function Dashboard({ user }) {
             </button>
           </div>
           <nav className="adm-nav">
-            {NAV.map((n) => (
-              <button
-                key={n.id}
-                className={tab === n.id ? "adm-item act" : "adm-item"}
-                onClick={() => go(n.id)}
-              >
-                <Icon name={n.icon} />
-                {n.label}
-              </button>
+            {NAV.map((n, i) => (
+              <Fragment key={n.id}>
+                {n.section && n.section !== NAV[i - 1]?.section && (
+                  <span className="adm-group">{n.section}</span>
+                )}
+                <button
+                  className={tab === n.id ? "adm-item act" : "adm-item"}
+                  onClick={() => go(n.id)}
+                >
+                  <Icon name={n.icon} />
+                  {n.label}
+                </button>
+              </Fragment>
             ))}
           </nav>
           <div className="adm-foot">
@@ -279,8 +297,26 @@ export default function Dashboard({ user }) {
           {tab === "home" && (
             <Home designs={designs} products={products} onTab={go} />
           )}
-          {tab === "galeri" && <GalleryTab onError={setMsg} />}
-          {tab === "konten" && <ContentTab onError={setMsg} />}
+          {tab === "galeri" && (
+            <>
+              <ContentPage
+                key="galeri"
+                pageKey="galeri"
+                views={VIEWS.galeri}
+                inline
+                onError={setMsg}
+              />
+              <GalleryTab onError={setMsg} />
+            </>
+          )}
+          {tab.startsWith("c-") && (
+            <ContentPage
+              key={tab}
+              pageKey={tab.slice(2)}
+              views={VIEWS[tab.slice(2)]}
+              onError={setMsg}
+            />
+          )}
           {tab === "desain" && (
             <DesignsTab
               designs={designs}

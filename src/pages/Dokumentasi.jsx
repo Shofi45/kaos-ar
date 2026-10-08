@@ -6,9 +6,9 @@ export default function Dokumentasi() {
   const c = useContent("dokumentasi");
 
   return (
-    <Page title="Panduan Scan AR" lead={c.lead}>
+    <Page title={c.title} lead={c.lead}>
       <section className="sec">
-        <h2>Langkah singkat</h2>
+        <h2>{c.stepsTitle}</h2>
         <div className="steps">
           {(c.steps || []).map((s, i) => (
             <div className="step" key={i}>
@@ -25,17 +25,19 @@ export default function Dokumentasi() {
         </div>
       </section>
 
-      <section className="sec">
-        <h2>Pertanyaan umum</h2>
-        <div className="faq">
-          {(c.faq || []).map((f, i) => (
-            <details key={i}>
-              <summary>{f.title}</summary>
-              <p>{f.text}</p>
-            </details>
-          ))}
-        </div>
-      </section>
+      {(c.faq || []).length > 0 && (
+        <section className="sec">
+          <h2>{c.faqTitle}</h2>
+          <div className="faq">
+            {c.faq.map((f, i) => (
+              <details key={i}>
+                <summary>{f.title}</summary>
+                <p>{f.text}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+      )}
     </Page>
   );
 }

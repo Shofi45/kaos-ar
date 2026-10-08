@@ -2,32 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import Page from "./Page";
 import ProductCard from "../site/ProductCard";
 import { AR_URL } from "../config";
+import { ICON_PATHS } from "../site/icons";
 import { useProducts } from "../api";
 import { useContent } from "../content";
 import { supabase } from "../supabase";
-
-const FEATURES = [
-  {
-    title: "Efek AR",
-    text: "Desain di kaos bergerak lewat kamera HP.",
-    icon: "M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 12h8",
-  },
-  {
-    title: "Tanpa aplikasi",
-    text: "Cukup browser, tidak perlu unduh apa pun.",
-    icon: "M7 3h10v18H7zM11 18h2",
-  },
-  {
-    title: "Koleksi dan hadiah",
-    text: "Scan semua desain, dapatkan kode diskon.",
-    icon: "M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z",
-  },
-  {
-    title: "Beli di Shopee",
-    text: "Pesanan aman lewat toko resmi kami.",
-    icon: "M5 8h14l-1 12H6L5 8zM9 8V6a3 3 0 0 1 6 0v2",
-  },
-];
 
 const Icon = ({ d }) => (
   <svg
@@ -70,11 +48,11 @@ export default function Home() {
     <Page>
       <section className="hx">
         <div className="hx-text">
-          <span className="hx-tag">KAOS DENGAN EFEK AR</span>
+          {c.tag && <span className="hx-tag">{c.tag}</span>}
           <h1>{c.title}</h1>
           <p>{c.lead}</p>
           <form className="hx-search" action="/katalog" method="get">
-            <input name="q" placeholder="Cari kaos atau merchandise..." />
+            <input name="q" placeholder={c.searchPlaceholder} />
             <button type="submit">Cari</button>
           </form>
           {cats.length > 0 && (
@@ -102,7 +80,7 @@ export default function Home() {
           ) : (
             <div className="hx-ph">Zayfen</div>
           )}
-          <span className="hx-float">Scan, lalu lihat hidup</span>
+          {c.floatText && <span className="hx-float">{c.floatText}</span>}
         </div>
       </section>
 
@@ -127,8 +105,8 @@ export default function Home() {
       <section className="sec">
         <div className="sec-head">
           <div>
-            <h2>Produk pilihan</h2>
-            <p className="pg-note">Pilihan terbaru dari Zayfen.</p>
+            <h2>{c.featuredTitle}</h2>
+            <p className="pg-note">{c.featuredNote}</p>
           </div>
           <div className="hs-nav">
             <a href="/katalog">Lihat semua</a>
@@ -153,7 +131,7 @@ export default function Home() {
 
       <section className="promo">
         <div>
-          <span className="hx-tag">KOLEKSI DESAIN</span>
+          {c.promoTag && <span className="hx-tag">{c.promoTag}</span>}
           <h2>{c.ctaTitle}</h2>
           <p>{c.ctaText}</p>
           <a className="pbtn" href={AR_URL}>
@@ -163,12 +141,12 @@ export default function Home() {
       </section>
 
       <section className="sec">
-        <h2>Kenapa Zayfen?</h2>
+        <h2>{c.featuresTitle}</h2>
         <div className="why">
-          {FEATURES.map((f) => (
-            <div className="why-item" key={f.title}>
+          {(c.features || []).map((f, i) => (
+            <div className="why-item" key={i}>
               <span className="why-ic">
-                <Icon d={f.icon} />
+                <Icon d={ICON_PATHS[f.icon] || ICON_PATHS.star} />
               </span>
               <strong>{f.title}</strong>
               <p>{f.text}</p>
@@ -178,7 +156,7 @@ export default function Home() {
       </section>
 
       <section className="sec">
-        <h2>Cara kerja</h2>
+        <h2>{c.stepsTitle}</h2>
         <div className="steps">
           {(c.steps || []).map((s, i) => (
             <div className="step" key={i}>
@@ -197,11 +175,8 @@ export default function Home() {
           </div>
         </div>
         <div className="phone-text">
-          <h2>Langsung dari kamera HP</h2>
-          <p>
-            Scan QR atau buka link Scan AR, izinkan kamera, lalu arahkan ke
-            desain di kaos. Animasinya muncul tanpa unduh aplikasi.
-          </p>
+          <h2>{c.phoneTitle}</h2>
+          <p>{c.phoneText}</p>
           <div className="hero-cta hx-cta">
             <a className="pbtn" href={AR_URL}>
               Scan AR Sekarang

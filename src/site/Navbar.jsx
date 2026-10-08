@@ -1,19 +1,21 @@
 import { useState } from "react";
-import { AR_URL, MENU } from "../config";
+import { AR_URL } from "../config";
+import { useContent } from "../content";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const s = useContent("pengaturan");
   const here = window.location.pathname.replace(/\/+$/, "") || "/";
 
   return (
     <header className="nav">
       <div className="nav-in">
         <a className="nav-logo" href="/">
-          Zayfen
+          {s.brand}
         </a>
 
         <nav className={open ? "nav-menu open" : "nav-menu"}>
-          {MENU.map((m) => (
+          {(s.menu || []).map((m) => (
             <a
               key={m.path}
               href={m.path}
@@ -23,7 +25,7 @@ export default function Navbar() {
             </a>
           ))}
           <a className="nav-ar" href={AR_URL}>
-            Scan AR
+            {s.navButton}
           </a>
         </nav>
 

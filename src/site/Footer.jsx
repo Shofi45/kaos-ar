@@ -1,17 +1,15 @@
-import { AR_URL, MENU } from "../config";
+import { AR_URL } from "../config";
 import { useContent } from "../content";
 
 export default function Footer() {
   const k = useContent("kontak");
+  const s = useContent("pengaturan");
   return (
     <footer className="foot">
       <div className="foot-in">
         <div className="foot-brand">
-          <strong>Zayfen</strong>
-          <p>
-            Kaos dan merchandise dengan efek AR. Arahkan kamera, lihat desainnya
-            hidup.
-          </p>
+          <strong>{s.brand}</strong>
+          <p>{s.footerText}</p>
           <a className="foot-ar" href={AR_URL}>
             Coba Scan AR
           </a>
@@ -19,7 +17,7 @@ export default function Footer() {
 
         <div>
           <h4>Menu</h4>
-          {MENU.map((m) => (
+          {(s.menu || []).map((m) => (
             <a key={m.path} href={m.path}>
               {m.label}
             </a>
@@ -49,7 +47,7 @@ export default function Footer() {
       </div>
 
       <div className="foot-copy">
-        © {new Date().getFullYear()} Zayfen. Semua hak dilindungi.
+        © {new Date().getFullYear()} {s.copyright}
       </div>
     </footer>
   );

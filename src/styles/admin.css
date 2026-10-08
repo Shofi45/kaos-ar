@@ -626,3 +626,188 @@
   font: inherit;
   resize: vertical;
 }
+
+/* ---- Editor konten per halaman ---- */
+.adm-group {
+  padding: 14px 14px 4px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.cp {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 800px;
+  margin-bottom: 14px;
+}
+.cp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cp-list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.cp-item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+}
+.cp-item-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.cp-item-actions {
+  display: flex;
+  gap: 6px;
+}
+.cp-save {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--panel);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
+}
+.cp-save .hint,
+.cp-save .err {
+  margin: 0;
+}
+.admin .cp-dirty {
+  color: #fcd34d;
+  font-size: 13px;
+}
+.admin select {
+  width: 100%;
+}
+/* ---- Editor konten: input di kiri, hasil di kanan ---- */
+.ct {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.ct-left,
+.ct-stack,
+.ct-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.ct-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+}
+.ct-pills {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+}
+.admin .ct-pills button {
+  flex: none;
+  white-space: nowrap;
+}
+.ct-preview {
+  gap: 12px;
+}
+.ct-line span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+.ct-line p {
+  margin: 2px 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ct-item.card {
+  gap: 12px;
+}
+.ct-item.editing {
+  border-color: var(--p2);
+}
+.ct-item-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+.ct-item-main > div {
+  min-width: 0;
+}
+.ct-item-main strong {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.ct-item-main p {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.ct-num {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(168, 85, 247, 0.25);
+  font-size: 13px;
+  font-weight: 600;
+}
+.ct-chip {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--p3);
+  font-size: 12px;
+}
+.ct-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+@media (max-width: 860px) {
+  .admin .ct button {
+    min-height: 44px;
+  }
+  .admin .ct input,
+  .admin .ct select,
+  .admin .ct textarea {
+    font-size: 16px;
+  }
+  .ct-actions button {
+    flex: 1 1 auto;
+  }
+}

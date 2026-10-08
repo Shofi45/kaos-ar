@@ -16,7 +16,7 @@ export default function Kontak() {
   ].filter(Boolean);
 
   return (
-    <Page title="Kontak" lead={c.lead}>
+    <Page title={c.title} lead={c.lead}>
       <section className="sec">
         <div className="contact-list">
           {rows.map(([t, d, href]) => (
