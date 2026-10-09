@@ -196,7 +196,9 @@ export default function Home() {
           </div>
           <div className="gstrip">
             {gallery.map((g) => (
-              <img key={g.id} src={g.image_url} alt={g.title} loading="lazy" />
+              <a key={g.id} href={`/galeri/${g.id}`}>
+                <img src={g.image_url} alt={g.title} loading="lazy" />
+              </a>
             ))}
           </div>
         </section>

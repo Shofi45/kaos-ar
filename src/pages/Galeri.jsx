@@ -28,7 +28,9 @@ export default function Galeri() {
         <div className="ggrid">
           {(items || []).map((g) => (
             <figure className="gitem" key={g.id}>
-              <img src={g.image_url} alt={g.title} loading="lazy" />
+              <a href={`/galeri/${g.id}`}>
+                <img src={g.image_url} alt={g.title} loading="lazy" />
+              </a>
               {g.title && <figcaption>{g.title}</figcaption>}
             </figure>
           ))}

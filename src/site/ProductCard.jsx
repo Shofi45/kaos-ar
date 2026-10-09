@@ -9,20 +9,23 @@ export default function ProductCard({ p }) {
 
   return (
     <div className="kcard">
-      <div className="kimg">
+      <a className="kimg" href={`/produk/${p.id}`}>
         {p.image_url && <img src={p.image_url} alt={p.name} loading="lazy" />}
         {off > 0 && <span className="kbadge">{off}% off</span>}
         {p.design_slug && <span className="kar">AR</span>}
-      </div>
+      </a>
       <div className="kbody">
         {p.category && <small>{p.category}</small>}
-        <strong>{p.name}</strong>
+        <a className="ktitle" href={`/produk/${p.id}`}>
+          <strong>{p.name}</strong>
+        </a>
         {(p.print_type || p.fabric) && (
           <div className="kmeta">
             {p.print_type && <span>{p.print_type}</span>}
             {p.fabric && <span>{p.fabric}</span>}
           </div>
         )}
+        {p.description && <p className="kdesc">{p.description}</p>}
         <div className="kprice">
           <b>{rupiah(p.price)}</b>
           {off > 0 && <s>{rupiah(p.old_price)}</s>}

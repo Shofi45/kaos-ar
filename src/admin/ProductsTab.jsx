@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { fetchContent } from "../content";
 import {
   removeProduct,
@@ -7,6 +7,8 @@ import {
   toggleProduct,
   visible,
 } from "./api";
+
+const MAX_IMAGES = 6;
 
 function OptionSelect({ label, value, onChange, options, menu }) {
   return (
@@ -36,12 +38,20 @@ function ProductForm({ designs, editing, onSaved, onCancel }) {
   const [name, setName] = useState(editing?.name || "");
   const [price, setPrice] = useState(editing ? String(editing.price) : "");
   const [category, setCategory] = useState(editing?.category || "");
+  const [description, setDescription] = useState(editing?.description || "");
   const [oldPrice, setOldPrice] = useState(
     editing?.old_price ? String(editing.old_price) : "",
   );
   const [shopee, setShopee] = useState(editing?.shopee_url || "");
   const [designSlug, setDesignSlug] = useState(editing?.design_slug || "");
-  const [imageFile, setImageFile] = useState(null);
+  const [keep, setKeep] = useState(
+    editing?.images?.length
+      ? editing.images
+      : editing?.image_url
+        ? [editing.image_url]
+        : [],
+  );
+  const [newFiles, setNewFiles] = useState([]);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
   const [kategori, setKategori] = useState([]);
@@ -71,11 +81,15 @@ function ProductForm({ designs, editing, onSaved, onCancel }) {
     if (shopee.trim() && !/^https?:\/\//.test(shopee.trim())) {
       return setMsg("Link Shopee harus diawali https://");
     }
-    if (!editing && !imageFile) return setMsg("Produk baru butuh foto.");
-    if (imageFile && !/\.(png|jpe?g|webp)$/i.test(imageFile.name)) {
+    if (!keep.length && !newFiles.length) {
+      return setMsg("Produk butuh minimal 1 foto.");
+    }
+    if (keep.length + newFiles.length > MAX_IMAGES) {
+      return setMsg(`Maksimal ${MAX_IMAGES} foto.`);
+    }
+    if (newFiles.some((f) => !/\.(png|jpe?g|webp)$/i.test(f.name))) {
       return setMsg("Foto harus PNG, JPG, atau WEBP.");
     }
-
     setBusy(true);
     try {
       await saveProduct({
@@ -86,9 +100,11 @@ function ProductForm({ designs, editing, onSaved, onCancel }) {
         category: category.trim(),
         fabric,
         print_type: printType,
+        description: description.trim(),
         shopee_url: shopee.trim(),
         design_slug: designSlug,
-        imageFile,
+        keep,
+        newFiles,
       });
       onSaved();
     } catch (e) {
@@ -151,6 +167,16 @@ function ProductForm({ designs, editing, onSaved, onCancel }) {
         options={kainList}
         menu="Jenis kain"
       />
+      <label>
+        Deskripsi (opsional)
+        <textarea
+          rows={4}
+          maxLength={2000}
+          placeholder="Ceritakan desain, bahan, ukuran, atau cara perawatan."
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+      </label>
       <input
         placeholder="Link Shopee (https://...)"
         value={shopee}
@@ -170,12 +196,51 @@ function ProductForm({ designs, editing, onSaved, onCancel }) {
           ))}
         </select>
       </label>
+      <div className="pimgs">
+        {keep.map((u, i) => (
+          <div className="pimgs-item" key={u}>
+            <img src={u} alt="" />
+            {i === 0 && <em>Utama</em>}
+            <button
+              type="button"
+              className="small danger"
+              onClick={() => setKeep(keep.filter((x) => x !== u))}
+            >
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
+      {newFiles.length > 0 && (
+        <div className="pimgs-new">
+          {newFiles.map((f, i) => (
+            <button
+              type="button"
+              className="small ghost"
+              key={f.name + i}
+              onClick={() => setNewFiles(newFiles.filter((_, j) => j !== i))}
+            >
+              {f.name} ×
+            </button>
+          ))}
+        </div>
+      )}
       <label>
-        Foto produk {editing && "(kosongkan jika tidak diganti)"}
+        Foto produk ({keep.length + newFiles.length}/{MAX_IMAGES}), foto
+        pertama jadi foto utama
         <input
           type="file"
+          multiple
           accept="image/png,image/jpeg,image/webp"
-          onChange={(e) => setImageFile(e.target.files[0] || null)}
+          disabled={keep.length + newFiles.length >= MAX_IMAGES}
+          onChange={(e) => {
+            const room = MAX_IMAGES - keep.length - newFiles.length;
+            setNewFiles([
+              ...newFiles,
+              ...Array.from(e.target.files).slice(0, room),
+            ]);
+            e.target.value = "";
+          }}
         />
       </label>
       <button disabled={busy} onClick={submit}>

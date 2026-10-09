@@ -139,31 +139,55 @@ export const fetchProducts = () =>
 
 export const saveProduct = async (p) => {
   const id = p.old?.id || crypto.randomUUID();
-  const image_url = p.imageFile
-    ? await uploadFile(`products/${id}/image`, p.imageFile, p.imageFile.type)
-    : p.old?.image_url || "";
+  const keep = p.keep || [];
+  const uploaded = [];
+  for (const [i, f] of (p.newFiles || []).entries()) {
+    uploaded.push(
+      await uploadFile(`products/${id}/${Date.now()}-${i}`, f, f.type),
+    );
+  }
+  const images = [...keep, ...uploaded];
+  const image_url = images[0] || "";
+  const pathOf = (u) => (u.split("/designs/")[1] || "").split("?")[0];
+  const before = p.old?.images?.length
+    ? p.old.images
+    : p.old?.image_url
+      ? [p.old.image_url]
+      : [];
+  const gone = before
+    .filter((u) => !keep.includes(u))
+    .map(pathOf)
+    .filter(Boolean);
 
   const { error } = await supabase.from("products").upsert({
     id,
     name: p.name,
     price: p.price,
+    description: p.description,
     old_price: p.old_price,
     category: p.category,
+    images,
     fabric: p.fabric || "",
     print_type: p.print_type || "",
+    description: p.description || "",
     image_url,
     shopee_url: p.shopee_url,
     design_slug: p.design_slug || null,
     active: p.old ? p.old.active : true,
   });
   if (error) throw error;
+  if (gone.length) await supabase.storage.from(BUCKET).remove(gone);
 };
 
 export const toggleProduct = (p) =>
   supabase.from("products").update({ active: !p.active }).eq("id", p.id);
 
 export const removeProduct = async (p) => {
-  await supabase.storage.from(BUCKET).remove([`products/${p.id}/image`]);
+  const urls = p.images?.length ? p.images : p.image_url ? [p.image_url] : [];
+  const paths = urls
+    .map((u) => (u.split("/designs/")[1] || "").split("?")[0])
+    .filter(Boolean);
+  await supabase.storage.from(BUCKET).remove(paths);
   return supabase.from("products").delete().eq("id", p.id);
 };
 export const fetchGallery = () =>

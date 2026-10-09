@@ -8,6 +8,8 @@ import Tentang from "./pages/Tentang";
 import Dokumentasi from "./pages/Dokumentasi";
 import Kontak from "./pages/Kontak";
 import Galeri from "./pages/Galeri";
+import ProdukDetail from "./pages/ProdukDetail";
+import GaleriDetail from "./pages/GaleriDetail";
 import { KATALOG_URL, SITE_URL } from "./config";
 import { supabase } from "./supabase";
 
@@ -114,6 +116,10 @@ export default function App() {
   if (ADMIN) return <Admin />;
   if (KATALOG) return <Katalog />;
   if (SHOP) return <Redirect to={KATALOG_URL} />;
+  const produk = PATH.match(/^\/produk\/([^/]+)$/);
+  if (produk) return <ProdukDetail id={decodeURIComponent(produk[1])} />;
+  const galeri = PATH.match(/^\/galeri\/([^/]+)$/);
+  if (galeri) return <GaleriDetail id={decodeURIComponent(galeri[1])} />;
   const Page = PAGES[PATH];
   if (Page && !(PATH === "/" && AR_HOST)) return <Page />;
   return <Viewer />;
