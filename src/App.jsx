@@ -8,6 +8,7 @@ import Tentang from "./pages/Tentang";
 import Dokumentasi from "./pages/Dokumentasi";
 import Kontak from "./pages/Kontak";
 import Galeri from "./pages/Galeri";
+import VideoPage from "./pages/VideoPage";
 import ProdukDetail from "./pages/ProdukDetail";
 import GaleriDetail from "./pages/GaleriDetail";
 import { KATALOG_URL, SITE_URL } from "./config";
@@ -37,7 +38,7 @@ async function loadDesign(slug) {
   if (supabase && !slug) {
     const { data, error } = await supabase
       .from("designs")
-      .select("slug, target_url, video_url")
+      .select("slug, target_url, video_url, video_source, youtube_id")
       .not("pos", "is", null)
       .order("pos", { ascending: true });
     if (error) console.error(error);
@@ -45,6 +46,7 @@ async function loadDesign(slug) {
       return {
         target: data[0].target_url,
         videos: data.map((d) => d.video_url),
+        yt: data.map((d) => (d.video_source === "youtube" ? d.youtube_id : "")),
         slugs: data.map((d) => d.slug),
       };
     }
@@ -53,12 +55,18 @@ async function loadDesign(slug) {
   if (supabase) {
     const { data, error } = await supabase
       .from("designs")
-      .select("target_url, video_url")
+      .select("target_url, video_url, video_source, youtube_id")
       .eq("slug", slug)
       .eq("active", true)
       .maybeSingle();
     if (error) console.error(error);
-    if (data) return { target: data.target_url, video: data.video_url };
+    if (data) {
+      return {
+        target: data.target_url,
+        video: data.video_url,
+        yt: [data.video_source === "youtube" ? data.youtube_id : ""],
+      };
+    }
   }
   const r = await fetch(import.meta.env.BASE_URL + "designs.json", {
     cache: "no-cache",
@@ -120,6 +128,8 @@ export default function App() {
   if (produk) return <ProdukDetail id={decodeURIComponent(produk[1])} />;
   const galeri = PATH.match(/^\/galeri\/([^/]+)$/);
   if (galeri) return <GaleriDetail id={decodeURIComponent(galeri[1])} />;
+  const video = PATH.match(/^\/video\/([^/]+)$/);
+  if (video) return <VideoPage slug={decodeURIComponent(video[1])} />;
   const Page = PAGES[PATH];
   if (Page && !(PATH === "/" && AR_HOST)) return <Page />;
   return <Viewer />;

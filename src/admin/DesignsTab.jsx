@@ -2,6 +2,8 @@ import { useState } from "react";
 import QRCode from "qrcode";
 import {
   designLink,
+  localLink,
+  parseYouTube,
   removeDesign,
   saveDesign,
   slugOk,
@@ -9,15 +11,20 @@ import {
   visible,
 } from "./api";
 
-function DesignForm({ list, onSaved }) {
-  const [slug, setSlug] = useState("");
-  const [title, setTitle] = useState("");
+const ytLink = (id) => (id ? `https://www.youtube.com/watch?v=${id}` : "");
+
+function DesignForm({ list, editing, onSaved, onCancel }) {
+  const [slug, setSlug] = useState(editing?.slug || "");
+  const [title, setTitle] = useState(editing?.title || "");
   const [imageFile, setImageFile] = useState(null);
   const [videoFile, setVideoFile] = useState(null);
+  const [source, setSource] = useState(editing?.video_source || "upload");
+  const [ytUrl, setYtUrl] = useState(ytLink(editing?.youtube_id));
   const [fileKey, setFileKey] = useState(0);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
   const [progress, setProgress] = useState("");
+  const ytId = parseYouTube(ytUrl);
 
   const submit = async () => {
     setMsg("");
@@ -27,25 +34,30 @@ function DesignForm({ list, onSaved }) {
         "Nama hanya huruf kecil, angka, dan tanda hubung. Contoh: naga-merah",
       );
     }
-    const old = list.find((d) => d.slug === s);
-    if (!old && (!imageFile || !videoFile)) {
-      return setMsg(
-        "Desain baru butuh gambar desain (PNG/JPG) dan video (.mp4).",
-      );
+    const old = editing || list.find((d) => d.slug === s);
+    if (!old && !imageFile) {
+      return setMsg("Desain baru butuh gambar desain (PNG/JPG).");
     }
     if (imageFile && !/\.(png|jpe?g)$/i.test(imageFile.name)) {
       return setMsg("Gambar harus berformat PNG atau JPG");
     }
-    if (videoFile && !videoFile.name.toLowerCase().endsWith(".mp4")) {
-      return setMsg("Video harus berformat .mp4");
-    }
-    if (videoFile && videoFile.size > 5 * 1024 * 1024) {
-      if (
-        !window.confirm(
-          "Video lebih dari 5 MB. Ini boros kuota tiap scan. Lanjut?",
+    if (source === "youtube") {
+      if (!ytId) return setMsg("Link YouTube tidak valid.");
+    } else {
+      if (!videoFile && !old?.video_url) {
+        return setMsg("Unggah video (.mp4) atau pilih sumber Link YouTube.");
+      }
+      if (videoFile && !videoFile.name.toLowerCase().endsWith(".mp4")) {
+        return setMsg("Video harus berformat .mp4");
+      }
+      if (videoFile && videoFile.size > 5 * 1024 * 1024) {
+        if (
+          !window.confirm(
+            "Video lebih dari 5 MB. Ini boros kuota tiap scan. Lanjut?",
+          )
         )
-      )
-        return;
+          return;
+      }
     }
 
     setBusy(true);
@@ -55,17 +67,24 @@ function DesignForm({ list, onSaved }) {
         slug: s,
         title,
         imageFile,
-        videoFile,
+        videoFile: source === "upload" ? videoFile : null,
+        videoSource: source,
+        youtubeUrl: ytUrl,
         old,
         onProgress: (p) => setProgress(`Memproses gambar ${p}%`),
       });
-      setMsg(`Tersimpan: ${s}`);
-      setSlug("");
-      setTitle("");
-      setImageFile(null);
-      setVideoFile(null);
-      setFileKey((k) => k + 1);
       onSaved();
+      if (editing) {
+        onCancel();
+      } else {
+        setMsg(`Tersimpan: ${s}`);
+        setSlug("");
+        setTitle("");
+        setImageFile(null);
+        setVideoFile(null);
+        setYtUrl("");
+        setFileKey((k) => k + 1);
+      }
     } catch (e) {
       setMsg(e.message || String(e));
     } finally {
@@ -75,11 +94,12 @@ function DesignForm({ list, onSaved }) {
   };
 
   return (
-    <div className="card">
-      <h3>Tambah / ganti desain</h3>
+    <div className="card" id="design-form">
+      <h3>{editing ? `Ubah desain: ${editing.slug}` : "Tambah desain"}</h3>
       <input
         placeholder="Nama desain, contoh: naga-merah"
         value={slug}
+        disabled={Boolean(editing)}
         onChange={(e) => setSlug(e.target.value)}
       />
       <input
@@ -87,8 +107,18 @@ function DesignForm({ list, onSaved }) {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
       />
+
+      {editing?.image_url && (
+        <img
+          className="adm-thumb"
+          src={editing.image_url}
+          alt="Gambar saat ini"
+        />
+      )}
       <label>
-        Gambar desain (PNG/JPG)
+        {editing
+          ? "Ganti gambar desain (kosongkan untuk tetap memakai yang lama)"
+          : "Gambar desain (PNG/JPG)"}
         <input
           key={"t" + fileKey}
           type="file"
@@ -96,29 +126,88 @@ function DesignForm({ list, onSaved }) {
           onChange={(e) => setImageFile(e.target.files[0] || null)}
         />
       </label>
-      <label>
-        Video (.mp4, disarankan di bawah 3 MB)
-        <input
-          key={"v" + fileKey}
-          type="file"
-          accept="video/mp4"
-          onChange={(e) => setVideoFile(e.target.files[0] || null)}
-        />
-      </label>
+      {editing && imageFile && (
+        <p className="hint">
+          Gambar baru memicu pembuatan ulang marker, jadi prosesnya lebih lama.
+        </p>
+      )}
+
+      <div className="row">
+        <button
+          type="button"
+          className={source === "upload" ? "small" : "small ghost"}
+          onClick={() => setSource("upload")}
+        >
+          Unggah video
+        </button>
+        <button
+          type="button"
+          className={source === "youtube" ? "small" : "small ghost"}
+          onClick={() => setSource("youtube")}
+        >
+          Link YouTube
+        </button>
+      </div>
+      {source === "upload" ? (
+        <label>
+          {editing?.video_url
+            ? "Ganti video .mp4 (kosongkan untuk tetap memakai yang lama)"
+            : "Video (.mp4, disarankan di bawah 3 MB)"}
+          <input
+            key={"v" + fileKey}
+            type="file"
+            accept="video/mp4"
+            onChange={(e) => setVideoFile(e.target.files[0] || null)}
+          />
+        </label>
+      ) : (
+        <label>
+          Link video YouTube
+          <input
+            type="text"
+            inputMode="url"
+            placeholder="https://www.youtube.com/watch?v=..."
+            value={ytUrl}
+            onChange={(e) => setYtUrl(e.target.value)}
+          />
+          {ytUrl.trim() && !ytId && (
+            <small className="err">
+              Link tidak dikenali sebagai video YouTube.
+            </small>
+          )}
+          {ytId && (
+            <img
+              className="adm-thumb"
+              src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}
+              alt="Pratinjau video"
+            />
+          )}
+        </label>
+      )}
+
       <button disabled={busy} onClick={submit}>
-        {busy ? progress || "Mengunggah..." : "Simpan"}
+        {busy
+          ? progress || "Menyimpan..."
+          : editing
+            ? "Simpan perubahan"
+            : "Simpan"}
       </button>
+      {editing && (
+        <button className="small ghost" onClick={onCancel} disabled={busy}>
+          Batal ubah
+        </button>
+      )}
       {msg && <p className="err">{msg}</p>}
       <p className="hint">
-        Nama yang sudah ada = ganti file (boleh hanya salah satu). Semua desain
-        dipakai lewat satu link yang sama.
+        QR tiap desain mengarah ke halaman video desain itu. Marker gambar tetap
+        dipakai bersama lewat halaman Scan AR.
       </p>
     </div>
   );
 }
 
-function DesignCard({ design, onQr, onToggle, onRemove }) {
-  const link = designLink();
+function DesignCard({ design, onEdit, onQr, onToggle, onRemove }) {
+  const link = designLink(design.slug);
 
   return (
     <div className="card">
@@ -136,8 +225,22 @@ function DesignCard({ design, onQr, onToggle, onRemove }) {
           {design.active ? "aktif" : "nonaktif"}
         </span>
       </div>
+      <span className="ct-chip">
+        {design.video_source === "youtube"
+          ? "Video: YouTube"
+          : "Video: unggahan"}
+      </span>
       <code>{link}</code>
       <div className="row">
+        <button className="small" onClick={() => onEdit(design)}>
+          Ubah
+        </button>
+        <button
+          className="small"
+          onClick={() => window.open(localLink(design.slug), "_blank")}
+        >
+          Buka
+        </button>
         <button
           className="small"
           onClick={() => navigator.clipboard.writeText(link)}
@@ -163,6 +266,7 @@ function QrModal({ qr, onClose }) {
     <div className="modal" onClick={onClose}>
       <div className="card" onClick={(e) => e.stopPropagation()}>
         <img src={qr.url} alt={`QR ${qr.slug}`} style={{ width: "100%" }} />
+        <code>{qr.link}</code>
         <a href={qr.url} download={`qr-${qr.slug}.png`}>
           Unduh PNG
         </a>
@@ -176,12 +280,20 @@ function QrModal({ qr, onClose }) {
 
 export default function DesignsTab({ designs, q, filter, onReload, onError }) {
   const [qr, setQr] = useState(null);
+  const [editing, setEditing] = useState(null);
   const shown = visible(
     designs,
     q,
     filter,
     (d) => `${d.title || ""} ${d.slug}`,
   );
+
+  const onEdit = (d) => {
+    setEditing(d);
+    document
+      .getElementById("design-form")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const onToggle = async (d) => {
     const { error } = await toggleDesign(d);
@@ -198,22 +310,31 @@ export default function DesignsTab({ designs, q, filter, onReload, onError }) {
       return;
     const { error } = await removeDesign(d);
     if (error) onError(error.message);
+    if (editing?.slug === d.slug) setEditing(null);
     onReload();
   };
 
   const onQr = async (d) => {
-    const url = await QRCode.toDataURL(designLink(), { width: 512, margin: 2 });
-    setQr({ slug: d.slug, url });
+    const link = designLink(d.slug);
+    const url = await QRCode.toDataURL(link, { width: 512, margin: 2 });
+    setQr({ slug: d.slug, url, link });
   };
 
   return (
     <div className="adm-split">
-      <DesignForm list={designs} onSaved={onReload} />
+      <DesignForm
+        key={editing ? `edit-${editing.slug}` : "new"}
+        list={designs}
+        editing={editing}
+        onSaved={onReload}
+        onCancel={() => setEditing(null)}
+      />
       <div className="adm-list">
         {shown.map((d) => (
           <DesignCard
             key={d.slug}
             design={d}
+            onEdit={onEdit}
             onQr={onQr}
             onToggle={onToggle}
             onRemove={onRemove}

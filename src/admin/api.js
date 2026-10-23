@@ -1,12 +1,45 @@
 import { supabase } from "../supabase";
 import { compileMind } from "./compileMind";
+import { AR_URL } from "../config";
 
 const BUCKET = "designs";
 const COMBINED = "all/targets.mind";
 
 export const slugOk = (s) => /^[a-z0-9]+(-[a-z0-9]+)*$/.test(s);
 
-export const designLink = () => `${window.location.origin}/`;
+// Ambil ID video (11 karakter) dari berbagai bentuk link YouTube
+export const parseYouTube = (input) => {
+  const v = (input || "").trim();
+  if (/^[\w-]{11}$/.test(v)) return v;
+  try {
+    const u = new URL(v);
+    const host = u.hostname.replace(/^(www|m)\./, "");
+    let id = "";
+    if (host === "youtu.be") {
+      id = u.pathname.slice(1).split("/")[0];
+    } else if (
+      host === "youtube.com" ||
+      host === "music.youtube.com" ||
+      host === "youtube-nocookie.com"
+    ) {
+      if (u.pathname === "/watch") {
+        id = u.searchParams.get("v") || "";
+      } else {
+        const m = u.pathname.match(/^\/(?:embed|shorts|live|v)\/([\w-]{11})/);
+        if (m) id = m[1];
+      }
+    }
+    return /^[\w-]{11}$/.test(id) ? id : "";
+  } catch {
+    return "";
+  }
+};
+
+// Link yang dicetak di QR: halaman video milik desain itu
+export const designLink = (slug) => `${AR_URL}/video/${slug}`;
+
+// Untuk mengetes dari komputer sendiri
+export const localLink = (slug) => `${window.location.origin}/video/${slug}`;
 
 export const rupiah = (n) => "Rp " + Number(n).toLocaleString("id-ID");
 
@@ -76,6 +109,8 @@ export const saveDesign = async ({
   title,
   imageFile,
   videoFile,
+  videoSource = "upload",
+  youtubeUrl = "",
   old,
   onProgress,
 }) => {
@@ -84,13 +119,19 @@ export const saveDesign = async ({
     : old.image_url;
   const video_url = videoFile
     ? await uploadFile(`${slug}/video.mp4`, videoFile, "video/mp4")
-    : old.video_url;
+    : old?.video_url || "";
+  const youtube_id = videoSource === "youtube" ? parseYouTube(youtubeUrl) : "";
+  if (videoSource === "youtube" && !youtube_id) {
+    throw new Error("Link YouTube tidak valid.");
+  }
 
   const { error } = await supabase.from("designs").upsert({
     slug,
     title: title.trim() || old?.title || slug,
     image_url,
     video_url,
+    video_source: videoSource,
+    youtube_id,
     target_url: old?.target_url || "",
     active: old ? old.active : true,
   });

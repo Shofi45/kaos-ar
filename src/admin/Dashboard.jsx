@@ -99,7 +99,7 @@ const SUBTITLE = {
   kategori: "Atur daftar kategori untuk produk",
   kain: "Atur pilihan jenis kain untuk produk",
   print: "Atur pilihan jenis print untuk produk",
-  galeri: "Kelola teks halaman dan gambar di Galeri",
+  galeri: "Kelola gambar yang tampil di halaman Galeri",
   "c-home": META.home.subtitle,
   "c-tentang": META.tentang.subtitle,
   "c-dokumentasi": META.dokumentasi.subtitle,
@@ -333,18 +333,7 @@ export default function Dashboard({ user }) {
           {tab === "home" && (
             <Home designs={designs} products={products} onTab={go} />
           )}
-          {tab === "galeri" && (
-            <>
-              <ContentPage
-                key="galeri"
-                pageKey="galeri"
-                views={VIEWS.galeri}
-                inline
-                onError={setMsg}
-              />
-              <GalleryTab onError={setMsg} />
-            </>
-          )}
+          {tab === "galeri" && <GalleryTab onError={setMsg} />}
           {tab.startsWith("c-") && (
             <ContentPage
               key={tab}

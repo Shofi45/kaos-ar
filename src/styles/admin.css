@@ -849,3 +849,33 @@
   flex-wrap: wrap;
   gap: 6px;
 }
+/* ---- Perbaikan kolom cari ---- */
+.admin label.adm-search {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+}
+.admin .adm-search svg {
+  flex: none;
+}
+.admin .adm-search input[type="search"] {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--text);
+  font-size: 15px;
+  outline: none;
+}
+.admin .adm-search input[type="search"]:focus {
+  border: 0;
+  box-shadow: none;
+}
+.admin .adm-search:focus-within {
+  border-color: var(--p1);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.25);
+}

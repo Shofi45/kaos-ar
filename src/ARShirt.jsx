@@ -35,6 +35,7 @@ export default function ARShirt({ design, onBack }) {
   const [muted, setMuted] = useState(false);
   const [pinned, setPinned] = useState(false);
   const [hideReward, setHideReward] = useState(false);
+  const [yt, setYt] = useState(null);
   const [collected, setCollected] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("koleksi") || "[]");
@@ -117,6 +118,21 @@ export default function ARShirt({ design, onBack }) {
 
         const urls = design.videos || [design.video];
         urls.forEach((url, i) => {
+          const ytId = design.yt?.[i];
+          if (ytId) {
+            const a = mindar.addAnchor(i);
+            a.onTargetFound = () => {
+              activeRef.current = null;
+              collect(design.slugs?.[i]);
+              setYt((p) => (p?.play ? p : { id: ytId, play: false }));
+              setFound(true);
+            };
+            a.onTargetLost = () => {
+              setYt((p) => (p?.play ? p : null));
+              setFound(false);
+            };
+            return;
+          }
           const { video, plane } = makePlane(url);
           videos.push(video);
           const anchor = mindar.addAnchor(i);
@@ -196,7 +212,45 @@ export default function ARShirt({ design, onBack }) {
           </button>
         </div>
       )}
-      {found && !pinned && !error && (
+      {yt && !error && (
+        <div className="ar-yt">
+          {yt.play ? (
+            <iframe
+              title="Video YouTube"
+              src={`https://www.youtube-nocookie.com/embed/${yt.id}?autoplay=1&playsinline=1&rel=0&modestbranding=1`}
+              allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+              allowFullScreen
+            />
+          ) : (
+            <button
+              className="ar-yt-thumb"
+              onClick={() => setYt({ id: yt.id, play: true })}
+            >
+              <img
+                src={`https://img.youtube.com/vi/${yt.id}/hqdefault.jpg`}
+                alt=""
+              />
+              <span className="ar-yt-play">▶</span>
+              <span className="ar-yt-label">Tonton video</span>
+            </button>
+          )}
+          <div className="ar-yt-bar">
+            <a
+              href={`https://www.youtube.com/watch?v=${yt.id}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Buka di YouTube
+            </a>
+            {yt.play && (
+              <button className="small" onClick={() => setYt(null)}>
+                Tutup
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+      {found && !pinned && !yt && !error && (
         <button className="ar-sound ar-pin" onClick={pin}>
           Tahan video
         </button>
@@ -217,7 +271,7 @@ export default function ARShirt({ design, onBack }) {
           <button onClick={onBack}>Kembali</button>
         </div>
       )}
-      {!error && !found && !pinned && (
+      {!error && !found && !pinned && !yt && (
         <div className="ar-hint">
           Arahkan ke gambar di kaos
           {DEBUG && <div className="ar-debug">{debug}</div>}

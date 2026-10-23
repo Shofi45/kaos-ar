@@ -226,8 +226,8 @@ function ProductForm({ designs, editing, onSaved, onCancel }) {
         </div>
       )}
       <label>
-        Foto produk ({keep.length + newFiles.length}/{MAX_IMAGES}), foto
-        pertama jadi foto utama
+        Foto produk ({keep.length + newFiles.length}/{MAX_IMAGES}), foto pertama
+        jadi foto utama
         <input
           type="file"
           multiple
