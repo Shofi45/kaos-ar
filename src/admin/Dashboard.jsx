@@ -6,6 +6,7 @@ import ProductsTab from "./ProductsTab";
 import ContentPage from "./ContentPage";
 import { META, VIEWS } from "./contentSchemas";
 import GalleryTab from "./GalleryTab";
+import CodesTab from "./CodesTab";
 import CategoriesTab from "./CategoriesTab";
 import OptionsTab from "./OptionsTab";
 import { KATALOG_URL } from "../config";
@@ -26,6 +27,7 @@ const ICONS = {
   book: "M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11",
   mail: "M4 6h16v12H4zM4 7l8 6 8-6",
   sliders: "M4 7h9M17 7h3M4 17h3M11 17h9M15 5v4M9 15v4",
+  key: "M15 7a4 4 0 1 1-3.2 6.4L4 21H3v-3l8-8A4 4 0 0 1 15 7zM16 8h.01",
   tag: "M3 12V4h8l10 10-8 8zM7.5 8h.01",
   shirt: "M8 3 3 6l2 4 2-1v12h10V9l2 1 2-4-5-3a4 4 0 0 1-8 0z",
   printer: "M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7z",
@@ -49,6 +51,7 @@ const Icon = ({ name }) => (
 const NAV = [
   { id: "home", label: "Dashboard", icon: "home" },
   { id: "desain", label: "Desain AR", icon: "design" },
+  { id: "kode", label: "Kode game", icon: "key" },
   { id: "produk", label: "Produk", icon: "bag" },
   { id: "kategori", label: "Kategori", icon: "tag" },
   { id: "kain", label: "Jenis kain", icon: "shirt" },
@@ -100,6 +103,7 @@ const SUBTITLE = {
   kain: "Atur pilihan jenis kain untuk produk",
   print: "Atur pilihan jenis print untuk produk",
   galeri: "Kelola gambar yang tampil di halaman Galeri",
+  kode: "Buat dan kelola kode game untuk kartu pembelian",
   "c-home": META.home.subtitle,
   "c-tentang": META.tentang.subtitle,
   "c-dokumentasi": META.dokumentasi.subtitle,
@@ -365,6 +369,7 @@ export default function Dashboard({ user }) {
               onError={setMsg}
             />
           )}
+          {tab === "kode" && <CodesTab designs={designs} onError={setMsg} />}
           {tab === "desain" && (
             <DesignsTab
               designs={designs}

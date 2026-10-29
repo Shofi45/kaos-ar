@@ -1,5 +1,6 @@
 import { useState } from "react";
 import QRCode from "qrcode";
+import { POWER_OPTIONS } from "../game/engine";
 import {
   designLink,
   localLink,
@@ -20,7 +21,11 @@ function DesignForm({ list, editing, onSaved, onCancel }) {
   const [videoFile, setVideoFile] = useState(null);
   const [source, setSource] = useState(editing?.video_source || "upload");
   const [ytUrl, setYtUrl] = useState(ytLink(editing?.youtube_id));
+  const [portrait, setPortrait] = useState(Boolean(editing?.youtube_portrait));
   const [fileKey, setFileKey] = useState(0);
+  const [gPower, setGPower] = useState(editing?.game?.power || "double");
+  const [gName, setGName] = useState(editing?.game?.name || "");
+  const [gClues, setGClues] = useState((editing?.game?.clues || []).join("\n"));
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
   const [progress, setProgress] = useState("");
@@ -70,6 +75,16 @@ function DesignForm({ list, editing, onSaved, onCancel }) {
         videoFile: source === "upload" ? videoFile : null,
         videoSource: source,
         youtubeUrl: ytUrl,
+        youtubePortrait: portrait,
+        game: {
+          power: gPower,
+          name: gName.trim(),
+          clues: gClues
+            .split("\n")
+            .map((c) => c.trim())
+            .filter(Boolean)
+            .slice(0, 10),
+        },
         old,
         onProgress: (p) => setProgress(`Memproses gambar ${p}%`),
       });
@@ -83,6 +98,10 @@ function DesignForm({ list, editing, onSaved, onCancel }) {
         setImageFile(null);
         setVideoFile(null);
         setYtUrl("");
+        setPortrait(false);
+        setGPower("double");
+        setGName("");
+        setGClues("");
         setFileKey((k) => k + 1);
       }
     } catch (e) {
@@ -168,12 +187,25 @@ function DesignForm({ list, editing, onSaved, onCancel }) {
             inputMode="url"
             placeholder="https://www.youtube.com/watch?v=..."
             value={ytUrl}
-            onChange={(e) => setYtUrl(e.target.value)}
+            onChange={(e) => {
+              setYtUrl(e.target.value);
+              if (/\/shorts\//.test(e.target.value)) setPortrait(true);
+            }}
           />
           {ytUrl.trim() && !ytId && (
             <small className="err">
               Link tidak dikenali sebagai video YouTube.
             </small>
+          )}
+          {ytId && (
+            <span className="row">
+              <input
+                type="checkbox"
+                checked={portrait}
+                onChange={(e) => setPortrait(e.target.checked)}
+              />
+              <span>Video potret (YouTube Shorts)</span>
+            </span>
           )}
           {ytId && (
             <img
@@ -184,6 +216,44 @@ function DesignForm({ list, editing, onSaved, onCancel }) {
           )}
         </label>
       )}
+
+      <div className="game-settings">
+        <strong>Pengaturan game (opsional)</strong>
+        <label>
+          Nama karakter
+          <input
+            type="text"
+            placeholder="Contoh: Si Penjelajah"
+            value={gName}
+            onChange={(e) => setGName(e.target.value)}
+          />
+        </label>
+        <label>
+          Kuasa karakter
+          <select value={gPower} onChange={(e) => setGPower(e.target.value)}>
+            {POWER_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Petunjuk harta karun (satu per baris, maksimal 10)
+          <textarea
+            rows={4}
+            value={gClues}
+            onChange={(e) => setGClues(e.target.value)}
+            placeholder={
+              "Petunjuk pertama\nPetunjuk kedua\nBaris terakhir = pesan harta karun"
+            }
+          />
+          <small className="hint">
+            Baris terakhir tampil sebagai harta karunnya. Isi petunjuk bisa
+            dilihat publik, jadi jangan taruh kode bernilai di sini.
+          </small>
+        </label>
+      </div>
 
       <button disabled={busy} onClick={submit}>
         {busy

@@ -562,3 +562,10 @@ body {
 .ar-yt-bar a {
   color: var(--p3);
 }
+.ar-yt.portrait {
+  max-width: 200px;
+}
+.ar-yt.portrait iframe,
+.ar-yt.portrait .ar-yt-thumb {
+  aspect-ratio: 9 / 16;
+}

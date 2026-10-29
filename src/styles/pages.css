@@ -1097,3 +1097,220 @@ a.kimg {
   width: 100%;
   scroll-snap-align: center;
 }
+/* ---- Video potret dan tampilan HP ---- */
+.vp-player.portrait {
+  width: min(100%, calc(85vh * 9 / 16));
+  width: min(100%, calc(85dvh * 9 / 16));
+  margin: 0 auto;
+}
+.vp-player.portrait iframe {
+  aspect-ratio: 9 / 16;
+}
+.vp-player video {
+  max-height: 85vh;
+  max-height: 85dvh;
+}
+@media (max-width: 760px) {
+  .vp {
+    padding: 8px 0 40px;
+  }
+  .vp h1 {
+    padding: 0 16px;
+    font-size: 22px;
+  }
+  .vp-player {
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0;
+  }
+  .vp-actions {
+    padding: 0 16px;
+  }
+  .vp-actions .pbtn,
+  .vp-actions button.pbtn {
+    flex: 1 1 100%;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+  }
+}
+/* ---- Game dan kode game ---- */
+.gate {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(8, 5, 16, 0.92);
+  color: #fff;
+}
+.gate-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 360px;
+  padding: 24px 20px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--panel);
+  text-align: center;
+}
+.gate-card h2 {
+  margin: 0;
+  font-size: 22px;
+}
+.gate-card p {
+  margin: 0;
+  color: var(--muted);
+}
+.gate-card input {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #0d0818;
+  color: #fff;
+  font-size: 20px;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-transform: uppercase;
+}
+.gate-card .pbtn {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  cursor: pointer;
+}
+.gate-card p.gate-err {
+  color: #ff8a8a;
+}
+.game {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: #0b0716;
+}
+.game canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+.game-close {
+  position: absolute;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  right: 12px;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: rgba(20, 13, 34, 0.85);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+}
+/* ---- Tombol, soal, dan kartu di dalam game ---- */
+.game-mute {
+  position: absolute;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  right: 64px;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: rgba(20, 13, 34, 0.85);
+  font-size: 18px;
+  cursor: pointer;
+}
+.game-power {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  touch-action: none;
+}
+.game-modal {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(8, 5, 16, 0.78);
+}
+.game-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 340px;
+  padding: 22px 18px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--panel);
+  color: #fff;
+  text-align: center;
+}
+.game-card small {
+  color: var(--p3);
+  font-weight: 600;
+}
+.game-card h2 {
+  margin: 0;
+  font-size: 34px;
+}
+.game-card p {
+  margin: 0;
+  color: #e9d5ff;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.game-card button {
+  min-height: 52px;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #a855f7, #7c3aed);
+  color: #fff;
+  font: inherit;
+  font-size: 22px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.game-choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+/* ---- Pemutar YouTube di halaman video ---- */
+.yt-box {
+  position: relative;
+}
+.vp-player iframe {
+  height: auto;
+}
+.yt-tap {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  padding: 12px 20px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(20, 13, 34, 0.9);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+}
+.yt-fail {
+  margin: 0;
+  padding: 20px 16px;
+  color: var(--muted);
+  text-align: center;
+}
+.yt-fail a {
+  color: var(--p3);
+}

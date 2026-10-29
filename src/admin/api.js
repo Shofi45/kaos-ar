@@ -111,6 +111,8 @@ export const saveDesign = async ({
   videoFile,
   videoSource = "upload",
   youtubeUrl = "",
+  youtubePortrait = false,
+  game = {},
   old,
   onProgress,
 }) => {
@@ -132,6 +134,8 @@ export const saveDesign = async ({
     video_url,
     video_source: videoSource,
     youtube_id,
+    youtube_portrait: videoSource === "youtube" && youtubePortrait,
+    game,
     target_url: old?.target_url || "",
     active: old ? old.active : true,
   });

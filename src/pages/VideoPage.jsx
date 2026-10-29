@@ -6,12 +6,15 @@ import { useProducts } from "../api";
 import { AR_URL } from "../config";
 import { useContent } from "../content";
 import "../styles/pages.css";
+import YouTubePlayer from "../site/YouTubePlayer";
+import GameGate from "../game/GameGate";
 
 export default function VideoPage({ slug }) {
   const s = useContent("pengaturan");
   const { items } = useProducts();
   const [d, setD] = useState(undefined);
   const [copied, setCopied] = useState(false);
+  const [gameOpen, setGameOpen] = useState(false);
 
   useEffect(() => {
     if (!supabase) {
@@ -20,7 +23,9 @@ export default function VideoPage({ slug }) {
     }
     supabase
       .from("designs")
-      .select("slug, title, image_url, video_url, video_source, youtube_id")
+      .select(
+        "slug, title, image_url, video_url, video_source, youtube_id, youtube_portrait, game",
+      )
       .eq("slug", slug)
       .eq("active", true)
       .maybeSingle()
@@ -73,14 +78,15 @@ export default function VideoPage({ slug }) {
             {!hasVideo && <p className="pg-note">Video belum tersedia.</p>}
 
             {hasVideo && (
-              <div className="vp-player">
+              <div
+                className={
+                  isYt && d.youtube_portrait
+                    ? "vp-player portrait"
+                    : "vp-player"
+                }
+              >
                 {isYt ? (
-                  <iframe
-                    title={d.title || d.slug}
-                    src={`https://www.youtube-nocookie.com/embed/${d.youtube_id}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1`}
-                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                    allowFullScreen
-                  />
+                  <YouTubePlayer id={d.youtube_id} title={d.title || d.slug} />
                 ) : (
                   <video
                     src={d.video_url}
@@ -94,8 +100,10 @@ export default function VideoPage({ slug }) {
                 )}
               </div>
             )}
-
             <div className="vp-actions">
+              <button className="pbtn" onClick={() => setGameOpen(true)}>
+                Mainkan game
+              </button>
               {product && (
                 <a className="pbtn" href={`/produk/${product.id}`}>
                   Lihat produknya
@@ -121,6 +129,9 @@ export default function VideoPage({ slug }) {
           </>
         )}
       </main>
+      {gameOpen && d && (
+        <GameGate design={d} onClose={() => setGameOpen(false)} />
+      )}
       <Footer />
     </div>
   );

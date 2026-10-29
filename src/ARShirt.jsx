@@ -124,7 +124,15 @@ export default function ARShirt({ design, onBack }) {
             a.onTargetFound = () => {
               activeRef.current = null;
               collect(design.slugs?.[i]);
-              setYt((p) => (p?.play ? p : { id: ytId, play: false }));
+              setYt((p) =>
+                p?.play
+                  ? p
+                  : {
+                      id: ytId,
+                      play: false,
+                      portrait: Boolean(design.ytp?.[i]),
+                    },
+              );
               setFound(true);
             };
             a.onTargetLost = () => {
@@ -213,7 +221,7 @@ export default function ARShirt({ design, onBack }) {
         </div>
       )}
       {yt && !error && (
-        <div className="ar-yt">
+        <div className={yt.portrait ? "ar-yt portrait" : "ar-yt"}>
           {yt.play ? (
             <iframe
               title="Video YouTube"

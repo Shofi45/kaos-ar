@@ -879,3 +879,10 @@
   border-color: var(--p1);
   box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.25);
 }
+.admin .code-text {
+  display: block;
+  margin-bottom: 6px;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 20px;
+  letter-spacing: 0.08em;
+}

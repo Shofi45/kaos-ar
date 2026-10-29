@@ -38,7 +38,9 @@ async function loadDesign(slug) {
   if (supabase && !slug) {
     const { data, error } = await supabase
       .from("designs")
-      .select("slug, target_url, video_url, video_source, youtube_id")
+      .select(
+        "slug, target_url, video_url, video_source, youtube_id, youtube_portrait",
+      )
       .not("pos", "is", null)
       .order("pos", { ascending: true });
     if (error) console.error(error);
@@ -47,6 +49,7 @@ async function loadDesign(slug) {
         target: data[0].target_url,
         videos: data.map((d) => d.video_url),
         yt: data.map((d) => (d.video_source === "youtube" ? d.youtube_id : "")),
+        ytp: data.map((d) => Boolean(d.youtube_portrait)),
         slugs: data.map((d) => d.slug),
       };
     }
@@ -55,7 +58,9 @@ async function loadDesign(slug) {
   if (supabase) {
     const { data, error } = await supabase
       .from("designs")
-      .select("target_url, video_url, video_source, youtube_id")
+      .select(
+        "target_url, video_url, video_source, youtube_id, youtube_portrait",
+      )
       .eq("slug", slug)
       .eq("active", true)
       .maybeSingle();
@@ -65,6 +70,7 @@ async function loadDesign(slug) {
         target: data.target_url,
         video: data.video_url,
         yt: [data.video_source === "youtube" ? data.youtube_id : ""],
+        ytp: [Boolean(data.youtube_portrait)],
       };
     }
   }
