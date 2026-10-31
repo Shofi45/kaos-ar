@@ -1123,6 +1123,19 @@ a.kimg {
     border-left: 0;
     border-radius: 0;
   }
+  .vp-player.portrait {
+    width: min(100%, calc(55vh * 9 / 16));
+    width: min(100%, calc(55dvh * 9 / 16));
+  }
+  .vp-player video,
+  .vp-player iframe {
+    max-height: 55vh;
+    max-height: 55dvh;
+  }
+  .vp-player video {
+    max-width: 100%;
+    object-fit: contain;
+  }
   .vp-actions {
     padding: 0 16px;
   }
