@@ -1314,3 +1314,218 @@ a.kimg {
 .yt-fail a {
   color: var(--p3);
 }
+/* ---- Game aksi: kontrol sentuh dan layar landscape ---- */
+.game-mute,
+.game-close {
+  z-index: 60;
+}
+.controls {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: none;
+}
+.controls > * {
+  pointer-events: auto;
+  touch-action: none;
+}
+.pad {
+  position: absolute;
+  left: calc(18px + env(safe-area-inset-left, 0px));
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  width: 150px;
+  height: 150px;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  background: rgba(20, 13, 34, 0.55);
+}
+.pk {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 20px;
+  opacity: 0.7;
+  pointer-events: none;
+}
+.pk.up {
+  top: 6px;
+  left: 50px;
+}
+.pk.down {
+  bottom: 6px;
+  left: 50px;
+}
+.pk.left {
+  top: 50px;
+  left: 6px;
+}
+.pk.right {
+  top: 50px;
+  right: 6px;
+}
+.pad.up .pk.up,
+.pad.down .pk.down,
+.pad.left .pk.left,
+.pad.right .pk.right {
+  background: rgba(168, 85, 247, 0.6);
+  opacity: 1;
+}
+.controls .act {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  background: rgba(124, 58, 237, 0.78);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+.controls .act b {
+  font-size: 22px;
+  line-height: 1;
+}
+.controls .act small {
+  font-size: 10px;
+  font-weight: 700;
+}
+.controls .act::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    rgba(8, 5, 16, 0.7) calc(var(--cd, 0) * 1%),
+    transparent 0
+  );
+  pointer-events: none;
+}
+.controls .act.atk {
+  right: calc(18px + env(safe-area-inset-right, 0px));
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  width: 84px;
+  height: 84px;
+  background: rgba(239, 68, 68, 0.82);
+}
+.controls .act.s1 {
+  right: calc(114px + env(safe-area-inset-right, 0px));
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  width: 66px;
+  height: 66px;
+}
+.controls .act.s2 {
+  right: calc(98px + env(safe-area-inset-right, 0px));
+  bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+  width: 66px;
+  height: 66px;
+}
+.controls .act.ult {
+  right: calc(18px + env(safe-area-inset-right, 0px));
+  bottom: calc(112px + env(safe-area-inset-bottom, 0px));
+  width: 66px;
+  height: 66px;
+  background: rgba(245, 158, 11, 0.75);
+}
+.controls .act.ult.ready {
+  box-shadow: 0 0 18px 4px rgba(251, 191, 36, 0.9);
+  animation: ult-pulse 0.8s ease-in-out infinite alternate;
+}
+@keyframes ult-pulse {
+  to {
+    transform: scale(1.08);
+  }
+}
+.game-rotate {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px;
+  background: #0b0716;
+  color: #fff;
+  text-align: center;
+}
+.game-rotate h2 {
+  margin: 0;
+  font-size: 22px;
+}
+.game-rotate p {
+  margin: 0;
+  color: #c4b5fd;
+}
+.rotate-icon {
+  font-size: 56px;
+  animation: rotate-phone 1.8s ease-in-out infinite;
+}
+@keyframes rotate-phone {
+  0%,
+  30% {
+    transform: rotate(0deg);
+  }
+  70%,
+  100% {
+    transform: rotate(-90deg);
+  }
+}
+.game-modal {
+  z-index: 20;
+}
+.game-card.wide {
+  max-width: 440px;
+}
+.game-card button.ghost {
+  min-height: 44px;
+  border: 1px solid var(--line);
+  background: transparent;
+  font-size: 16px;
+}
+.stage-pick {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+.stage-pick span {
+  font-size: 20px;
+  font-weight: 700;
+}
+.stage-pick button {
+  width: 48px;
+  padding: 0;
+}
+@media (max-height: 460px) {
+  .game-card {
+    gap: 8px;
+    padding: 14px;
+  }
+  .game-card h2 {
+    font-size: 26px;
+  }
+  .game-card button {
+    min-height: 44px;
+    font-size: 18px;
+  }
+  .game-card p {
+    font-size: 13px;
+  }
+  .gate-card {
+    gap: 8px;
+    padding: 14px;
+  }
+}

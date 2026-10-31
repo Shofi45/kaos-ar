@@ -66,6 +66,23 @@ function tone(
 }
 
 export const sfx = {
+  punch: () => tone(180, 0.09, { type: "square", slide: -90, vol: 0.14 }),
+  impact: () => tone(260, 0.08, { type: "sawtooth", slide: -140, vol: 0.12 }),
+  kill: () => {
+    tone(440, 0.08, { type: "square", slide: -200, vol: 0.14 });
+    tone(220, 0.14, { type: "square", slide: -120, vol: 0.14, delay: 0.06 });
+  },
+  skill: () => tone(240, 0.22, { type: "sawtooth", slide: 520, vol: 0.14 }),
+  ult: () => {
+    [262, 330, 392, 523, 659, 784].forEach((f, i) =>
+      tone(f, 0.16, { type: "sawtooth", vol: 0.16, delay: i * 0.05 }),
+    );
+  },
+  win: () => {
+    [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) =>
+      tone(f, 0.18, { type: "triangle", vol: 0.22, delay: i * 0.11 }),
+    );
+  },
   jump: () => tone(300, 0.14, { slide: 340, vol: 0.14 }),
   coin: () => {
     tone(988, 0.07, { vol: 0.14 });

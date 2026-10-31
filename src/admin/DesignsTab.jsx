@@ -23,7 +23,7 @@ function DesignForm({ list, editing, onSaved, onCancel }) {
   const [ytUrl, setYtUrl] = useState(ytLink(editing?.youtube_id));
   const [portrait, setPortrait] = useState(Boolean(editing?.youtube_portrait));
   const [fileKey, setFileKey] = useState(0);
-  const [gPower, setGPower] = useState(editing?.game?.power || "double");
+  const [gPower, setGPower] = useState(editing?.game?.power || "pedang");
   const [gName, setGName] = useState(editing?.game?.name || "");
   const [gClues, setGClues] = useState((editing?.game?.clues || []).join("\n"));
   const [busy, setBusy] = useState(false);
@@ -99,7 +99,7 @@ function DesignForm({ list, editing, onSaved, onCancel }) {
         setVideoFile(null);
         setYtUrl("");
         setPortrait(false);
-        setGPower("double");
+        setGPower("pedang");
         setGName("");
         setGClues("");
         setFileKey((k) => k + 1);
@@ -229,7 +229,7 @@ function DesignForm({ list, editing, onSaved, onCancel }) {
           />
         </label>
         <label>
-          Kuasa karakter
+          Gaya bertarung
           <select value={gPower} onChange={(e) => setGPower(e.target.value)}>
             {POWER_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>

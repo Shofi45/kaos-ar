@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect, useState } from "react";
 import { supabase } from "../supabase";
 import { clearCode, getDeviceId, getSavedCode, saveCode } from "./device";
+import { enterLandscape, exitLandscape } from "./screen";
 
 const Game = lazy(() => import("./Game"));
 
@@ -33,6 +34,8 @@ export default function GameGate({ design, onClose }) {
       setPhase("ask");
       return;
     }
+    // masuk landscape selagi masih dalam ketukan "Mainkan game"
+    enterLandscape();
     let alive = true;
     redeem(saved)
       .then((r) => {
@@ -41,10 +44,15 @@ export default function GameGate({ design, onClose }) {
           setPhase("play");
         } else {
           clearCode(design.slug);
+          exitLandscape();
           setPhase("ask");
         }
       })
-      .catch(() => alive && setPhase("ask"));
+      .catch(() => {
+        if (!alive) return;
+        exitLandscape();
+        setPhase("ask");
+      });
     return () => {
       alive = false;
     };
@@ -56,25 +64,34 @@ export default function GameGate({ design, onClose }) {
     if (v.length < 6) return setMsg("Masukkan kode dari kartu pembelian.");
     setBusy(true);
     setMsg("");
+    // harus dipanggil langsung di dalam ketukan tombol
+    enterLandscape();
     try {
       const r = await redeem(v);
       if (r === "ok") {
         saveCode(design.slug, v);
         setPhase("play");
       } else {
+        exitLandscape();
         setMsg(MESSAGES[r] || MESSAGES.invalid);
       }
     } catch {
+      exitLandscape();
       setMsg("Tidak bisa memeriksa kode. Cek koneksi internet lalu coba lagi.");
     } finally {
       setBusy(false);
     }
   };
 
+  const cancel = () => {
+    exitLandscape();
+    onClose();
+  };
+
   if (phase === "play") {
     return (
       <Suspense fallback={<div className="gate">Memuat game...</div>}>
-        <Game design={design} onClose={onClose} />
+        <Game design={design} onClose={cancel} />
       </Suspense>
     );
   }
@@ -84,7 +101,7 @@ export default function GameGate({ design, onClose }) {
   }
 
   return (
-    <div className="gate" onClick={onClose}>
+    <div className="gate" onClick={cancel}>
       <div className="gate-card" onClick={(e) => e.stopPropagation()}>
         <h2>Masukkan kode game</h2>
         <p>Kode ada di kartu pembelian yang kamu dapat bersama kaosmu.</p>
@@ -103,7 +120,7 @@ export default function GameGate({ design, onClose }) {
         <button className="pbtn" onClick={submit} disabled={busy}>
           {busy ? "Memeriksa..." : "Mulai main"}
         </button>
-        <button className="pbtn alt" onClick={onClose}>
+        <button className="pbtn alt" onClick={cancel}>
           Batal
         </button>
       </div>
