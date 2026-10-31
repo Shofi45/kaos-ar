@@ -81,6 +81,12 @@ export default function ARShirt({ design, onBack }) {
     pinnedRef.current = null;
     setPinned(false);
   };
+  const openGame = () => {
+    videosRef.current.forEach((video) => video.pause());
+    if (pinnedRef.current) unpin();
+    setYt(null);
+    setGameOpen(true);
+  };
   const videosRef = useRef([]);
   const activeRef = useRef(null);
   const mutedRef = useRef(false);
@@ -288,7 +294,7 @@ export default function ARShirt({ design, onBack }) {
       {showGameButton && !error && !gameOpen && (
         <button
           className="ar-game-button"
-          onClick={() => setGameOpen(true)}
+          onClick={openGame}
         >
           Mainkan game
         </button>
