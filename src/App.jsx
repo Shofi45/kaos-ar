@@ -39,7 +39,7 @@ async function loadDesign(slug) {
     const { data, error } = await supabase
       .from("designs")
       .select(
-        "slug, target_url, video_url, video_source, youtube_id, youtube_portrait",
+        "slug, title, game, target_url, video_url, video_source, youtube_id, youtube_portrait",
       )
       .not("pos", "is", null)
       .order("pos", { ascending: true });
@@ -51,6 +51,8 @@ async function loadDesign(slug) {
         yt: data.map((d) => (d.video_source === "youtube" ? d.youtube_id : "")),
         ytp: data.map((d) => Boolean(d.youtube_portrait)),
         slugs: data.map((d) => d.slug),
+        titles: data.map((d) => d.title),
+        games: data.map((d) => d.game),
       };
     }
   }
@@ -59,7 +61,7 @@ async function loadDesign(slug) {
     const { data, error } = await supabase
       .from("designs")
       .select(
-        "target_url, video_url, video_source, youtube_id, youtube_portrait",
+        "slug, title, game, target_url, video_url, video_source, youtube_id, youtube_portrait",
       )
       .eq("slug", slug)
       .eq("active", true)
@@ -67,6 +69,9 @@ async function loadDesign(slug) {
     if (error) console.error(error);
     if (data) {
       return {
+        slug: data.slug,
+        title: data.title,
+        game: data.game,
         target: data.target_url,
         video: data.video_url,
         yt: [data.video_source === "youtube" ? data.youtube_id : ""],
@@ -80,7 +85,7 @@ async function loadDesign(slug) {
   if (!r.ok) throw new Error("Daftar desain tidak bisa dimuat.");
   const list = await r.json();
   if (!list[slug]) throw new Error(`Desain "${slug}" tidak ditemukan.`);
-  return list[slug];
+  return { ...list[slug], slug };
 }
 
 function Viewer() {

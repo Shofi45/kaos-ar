@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { MindARThree } from "mind-ar/dist/mindar-image-three.prod.js";
 import { useContent } from "./content";
+import GameGate from "./game/GameGate";
 const BASE = import.meta.env.BASE_URL;
 const DEBUG = new URLSearchParams(window.location.search).has("debug");
 
@@ -36,6 +37,8 @@ export default function ARShirt({ design, onBack }) {
   const [pinned, setPinned] = useState(false);
   const [hideReward, setHideReward] = useState(false);
   const [yt, setYt] = useState(null);
+  const [gameDesign, setGameDesign] = useState(null);
+  const [gameOpen, setGameOpen] = useState(false);
   const [collected, setCollected] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("koleksi") || "[]");
@@ -118,11 +121,17 @@ export default function ARShirt({ design, onBack }) {
 
         const urls = design.videos || [design.video];
         urls.forEach((url, i) => {
+          const targetDesign = {
+            slug: design.slugs?.[i] || design.slug,
+            title: design.titles?.[i] || design.title,
+            game: design.games?.[i] || design.game,
+          };
           const ytId = design.yt?.[i];
           if (ytId) {
             const a = mindar.addAnchor(i);
             a.onTargetFound = () => {
               activeRef.current = null;
+              setGameDesign(targetDesign);
               collect(design.slugs?.[i]);
               setYt((p) =>
                 p?.play
@@ -147,6 +156,7 @@ export default function ARShirt({ design, onBack }) {
           anchor.group.add(plane);
           anchor.onTargetFound = () => {
             activeRef.current = video;
+            setGameDesign(targetDesign);
             collect(design.slugs?.[i]);
             video.muted = mutedRef.current;
             video.play().catch(() => {
@@ -201,8 +211,10 @@ export default function ARShirt({ design, onBack }) {
     };
   }, [design]);
 
+  const showGameButton = Boolean(gameDesign && (found || pinned || yt));
+
   return (
-    <div className="ar-wrap">
+    <div className={`ar-wrap${showGameButton ? " has-game" : ""}`}>
       <div ref={boxRef} className="ar-box" />
       <div ref={pinBoxRef} className="ar-pinbox" />
       {total > 1 && !error && (
@@ -272,6 +284,17 @@ export default function ARShirt({ design, onBack }) {
         <button className="ar-sound" onClick={enableSound}>
           Nyalakan suara
         </button>
+      )}
+      {showGameButton && !error && !gameOpen && (
+        <button
+          className="ar-game-button"
+          onClick={() => setGameOpen(true)}
+        >
+          Mainkan game
+        </button>
+      )}
+      {gameOpen && gameDesign && (
+        <GameGate design={gameDesign} onClose={() => setGameOpen(false)} />
       )}
       {error && (
         <div className="ar-overlay">
