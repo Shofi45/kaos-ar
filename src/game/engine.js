@@ -2,15 +2,15 @@
 export const W = 640;
 export const H = 360;
 export const GROUND = 300;
-export const GRAVITY = 1600;
-export const JUMP_V = -560;
+export const GRAVITY = 1800;
+export const JUMP_V = -525;
 export const MOVE = 170;
 export const MAX_HP = 100;
 export const MAX_ULT = 100;
 
 export const STYLES = {
   pedang: {
-    label: "Pendekar Pedang",
+    label: "Ninja Pedang",
     skills: [
       { id: "slash", name: "Tebasan", cd: 3.5, icon: "⚔️" },
       { id: "spin", name: "Putaran", cd: 6, icon: "🌀" },
@@ -306,22 +306,36 @@ function hitEnemy(s, e, dmg, kb = 0, stun = 0) {
 
 export function attack(s) {
   if (s.phase !== "play" || s.atkCd > 0) return;
-  s.atkCd = s.rageT > 0 ? 0.2 : 0.34;
-  s.atkT = 0.16;
+  s.atkCd = s.style === "pedang" ? (s.rageT > 0 ? 0.18 : 0.3) : s.rageT > 0 ? 0.2 : 0.34;
+  s.atkT = s.style === "pedang" ? 0.24 : 0.16;
   s.combo = s.comboT > 0 ? s.combo + 1 : 1;
   s.comboT = 0.7;
   const f = s.face;
-  const x0 = f > 0 ? s.px + 6 : s.px - 62;
-  const x1 = x0 + 56;
+  if (s.style !== "pedang") {
+    const x0 = f > 0 ? s.px + 6 : s.px - 62;
+    const x1 = x0 + 56;
+    const big = s.combo % 3 === 0;
+    let hit = 0;
+    s.enemies.forEach((e) => {
+      if (!e.dead && boxHit(e, x0, x1, s.py - 64, s.py - 4)) {
+        hitEnemy(s, e, big ? 20 : 12, f * (big ? 180 : 60));
+        hit = 1;
+      }
+    });
+    ev(s, "punch", s.px + f * 30, s.py - 34, hit);
+    return;
+  }
+  const x0 = f > 0 ? s.px + 2 : s.px - 86;
+  const x1 = x0 + 84;
   const big = s.combo % 3 === 0;
   let hit = 0;
   s.enemies.forEach((e) => {
-    if (!e.dead && boxHit(e, x0, x1, s.py - 64, s.py - 4)) {
-      hitEnemy(s, e, big ? 20 : 12, f * (big ? 180 : 60));
+    if (!e.dead && boxHit(e, x0, x1, s.py - 82, s.py - 8)) {
+      hitEnemy(s, e, big ? 24 : 14, f * (big ? 220 : 90), big ? 0.12 : 0);
       hit = 1;
     }
   });
-  ev(s, "punch", s.px + f * 30, s.py - 34, hit);
+  ev(s, "slash", s.px + f * 52, s.py - 54, s.combo);
 }
 
 function area(s, x0, x1, dmg, kb, stun) {
@@ -351,7 +365,7 @@ export function skill(s, i) {
   const def = STYLES[s.style].skills[i];
   s.cd[i] = def.cd * (s.rageT > 0 ? 0.6 : 1);
   const f = s.face;
-  ev(s, "skill", s.px, s.py - 30);
+  ev(s, "skill", s.px, s.py - 30, def.id);
   switch (def.id) {
     case "slash": {
       const x0 = s.px;
@@ -394,7 +408,7 @@ export function ultimate(s) {
   if (s.phase !== "play" || s.ult < MAX_ULT) return;
   s.ult = 0;
   const def = STYLES[s.style].ult;
-  ev(s, "ult", s.px, s.py - 30);
+  ev(s, "ult", s.px, s.py - 30, def.id);
   switch (def.id) {
     case "storm":
       s.invT = Math.max(s.invT, 1.3);
@@ -580,7 +594,11 @@ export function step(s, dt) {
   const dir = (inp.right ? 1 : 0) - (inp.left ? 1 : 0);
   if (dir !== 0) s.face = dir;
   const speed = MOVE * (s.rageT > 0 ? 1.3 : 1);
-  s.pvx = s.crouch ? 0 : dir * speed;
+  const targetVx = s.crouch ? 0 : dir * speed;
+  const rate = dir === 0 || s.crouch
+    ? s.onGround ? 1500 : 320
+    : s.onGround ? 1120 : 680;
+  s.pvx += clamp(targetVx - s.pvx, -rate * dt, rate * dt);
 
   if (s.jumpBuf > 0 && s.onGround && !s.crouch) {
     s.pvy = JUMP_V;

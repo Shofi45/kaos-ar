@@ -3,8 +3,7 @@ const MUTE_KEY = "zf_mute";
 
 let ctx = null;
 let master = null;
-let musicTimer = null;
-let step = 0;
+let adventureTrack = null;
 
 const readMuted = () => {
   try {
@@ -38,6 +37,7 @@ export function setMuted(v) {
   }
   if (master && ctx)
     master.gain.setTargetAtTime(v ? 0 : 0.6, ctx.currentTime, 0.02);
+  if (adventureTrack) adventureTrack.volume = v ? 0 : 0.34;
 }
 
 function tone(
@@ -46,6 +46,7 @@ function tone(
   { type = "square", vol = 0.18, slide = 0, delay = 0 } = {},
 ) {
   if (!ctx || !master) return;
+  if (ctx.state === "suspended") ctx.resume().catch(() => {});
   const t = ctx.currentTime + delay;
   const o = ctx.createOscillator();
   const g = ctx.createGain();
@@ -66,17 +67,35 @@ function tone(
 }
 
 export const sfx = {
-  punch: () => tone(180, 0.09, { type: "square", slide: -90, vol: 0.14 }),
-  impact: () => tone(260, 0.08, { type: "sawtooth", slide: -140, vol: 0.12 }),
-  kill: () => {
-    tone(440, 0.08, { type: "square", slide: -200, vol: 0.14 });
-    tone(220, 0.14, { type: "square", slide: -120, vol: 0.14, delay: 0.06 });
+  punch: () => {
+    tone(180, 0.13, { type: "square", slide: -110, vol: 0.3 });
+    tone(95, 0.1, { type: "triangle", slide: -35, vol: 0.2, delay: 0.025 });
   },
-  skill: () => tone(240, 0.22, { type: "sawtooth", slide: 520, vol: 0.14 }),
+  slash: () => {
+    tone(1120, 0.2, { type: "sawtooth", slide: -900, vol: 0.3 });
+    tone(460, 0.13, { type: "triangle", slide: -230, vol: 0.24, delay: 0.025 });
+    tone(150, 0.1, { type: "sine", slide: 80, vol: 0.16, delay: 0.06 });
+  },
+  impact: () => {
+    tone(240, 0.14, { type: "sawtooth", slide: -170, vol: 0.3 });
+    tone(95, 0.12, { type: "triangle", slide: -45, vol: 0.2, delay: 0.02 });
+  },
+  kill: () => {
+    tone(660, 0.11, { type: "triangle", slide: -300, vol: 0.28 });
+    tone(330, 0.18, { type: "square", slide: -180, vol: 0.28, delay: 0.045 });
+    tone(120, 0.16, { type: "sine", slide: -55, vol: 0.2, delay: 0.03 });
+  },
+  skill: (kind = "") => {
+    const spin = kind === "spin" || kind === "storm";
+    tone(spin ? 420 : 720, 0.24, { type: "sawtooth", slide: spin ? 560 : -520, vol: 0.32 });
+    tone(spin ? 180 : 250, 0.2, { type: "triangle", slide: -90, vol: 0.24, delay: 0.035 });
+    tone(980, 0.12, { type: "sine", slide: -420, vol: 0.18, delay: 0.06 });
+  },
   ult: () => {
     [262, 330, 392, 523, 659, 784].forEach((f, i) =>
-      tone(f, 0.16, { type: "sawtooth", vol: 0.16, delay: i * 0.05 }),
+      tone(f, 0.2, { type: "sawtooth", vol: 0.27, delay: i * 0.05 }),
     );
+    tone(96, 0.38, { type: "sine", slide: -35, vol: 0.25 });
   },
   win: () => {
     [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) =>
@@ -120,27 +139,23 @@ export const sfx = {
   },
 };
 
-// Musik latar sederhana: nada pentatonik yang berulang
-const MELODY = [
-  523, 659, 784, 659, 880, 784, 659, 523, 587, 740, 880, 740, 784, 659, 587,
-  523,
-];
-const BASS = [131, 131, 196, 196, 175, 175, 196, 196];
-
 export function startMusic() {
-  if (musicTimer || !ctx) return;
-  step = 0;
-  musicTimer = setInterval(() => {
-    const f = MELODY[step % MELODY.length];
-    tone(f, 0.18, { type: "triangle", vol: 0.05 });
-    if (step % 2 === 0) {
-      tone(BASS[(step / 2) % BASS.length], 0.34, { type: "sine", vol: 0.09 });
-    }
-    step += 1;
-  }, 240);
+  if (typeof Audio === "undefined") return;
+  if (!adventureTrack) {
+    adventureTrack = new Audio(`${import.meta.env.BASE_URL}game/adventure-theme.mp3`);
+    adventureTrack.loop = true;
+    adventureTrack.preload = "auto";
+    adventureTrack.volume = muted ? 0 : 0.34;
+  }
+  adventureTrack.volume = muted ? 0 : 0.34;
+  if (!adventureTrack.paused) return;
+  adventureTrack.play().catch(() => {
+    // Browser menolak autoplay: tombol Mulai akan mencoba lagi dari gestur pengguna.
+  });
 }
 
 export function stopMusic() {
-  clearInterval(musicTimer);
-  musicTimer = null;
+  if (!adventureTrack) return;
+  adventureTrack.pause();
+  adventureTrack.currentTime = 0;
 }

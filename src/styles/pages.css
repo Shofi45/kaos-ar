@@ -1210,6 +1210,20 @@ a.kimg {
   height: 100%;
   touch-action: none;
 }
+.game-ninja .game-card {
+  border-color: rgba(244, 63, 84, 0.55);
+  background: linear-gradient(145deg, rgba(36, 17, 24, 0.98), rgba(15, 10, 14, 0.98));
+  box-shadow: 0 20px 70px rgba(180, 20, 44, 0.22);
+}
+.game-ninja .game-card small {
+  color: #ff8290;
+}
+.game-ninja .game-card button {
+  background: linear-gradient(135deg, #ee4055, #8e172b);
+}
+.game-ninja .game-card button.ghost {
+  background: rgba(255, 255, 255, 0.08);
+}
 .game-close {
   position: absolute;
   top: calc(12px + env(safe-area-inset-top, 0px));
@@ -1356,6 +1370,10 @@ a.kimg {
   border-radius: 50%;
   background: rgba(20, 13, 34, 0.55);
 }
+.game-ninja .pad {
+  border-color: rgba(255, 115, 128, 0.34);
+  background: rgba(23, 9, 15, 0.58);
+}
 .pk {
   position: absolute;
   display: grid;
@@ -1391,6 +1409,12 @@ a.kimg {
   background: rgba(168, 85, 247, 0.6);
   opacity: 1;
 }
+.game-ninja .pad.up .pk.up,
+.game-ninja .pad.down .pk.down,
+.game-ninja .pad.left .pk.left,
+.game-ninja .pad.right .pk.right {
+  background: rgba(229, 43, 64, 0.66);
+}
 .controls .act {
   position: absolute;
   display: flex;
@@ -1405,6 +1429,11 @@ a.kimg {
   color: #fff;
   font: inherit;
   cursor: pointer;
+}
+.game-ninja .controls .act {
+  border-color: rgba(255, 210, 207, 0.48);
+  background: linear-gradient(145deg, rgba(130, 22, 40, 0.94), rgba(42, 12, 21, 0.94));
+  box-shadow: 0 0 18px rgba(220, 35, 55, 0.18);
 }
 .controls .act b {
   font-size: 22px;

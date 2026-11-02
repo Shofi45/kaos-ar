@@ -104,11 +104,31 @@ export default function Game({ design, onClose }) {
     setSel(saved);
 
     const img = new Image();
+    const heroImg = new Image();
+    const actionSheet = new Image();
+    const runFrames = [
+      "ninja-run-a.png",
+      "ninja-run-b.png",
+      "ninja-run-c.png",
+      "ninja-run-d.png",
+    ].map((name) => {
+      const frame = new Image();
+      frame.src = `${import.meta.env.BASE_URL}game/${name}`;
+      return frame;
+    });
     const view = {
       img,
       imgReady: false,
+      heroImg,
+      heroReady: false,
+      actionSheet,
+      actionSheetReady: false,
+      runFrames,
+      runPhase: 0,
       time: 0,
       shake: 0,
+      effects: [],
+      action: null,
       floaters: [],
       canvasW: 0,
       canvasH: 0,
@@ -120,6 +140,14 @@ export default function Game({ design, onClose }) {
       view.imgReady = true;
     };
     if (design.image_url) img.src = design.image_url;
+    heroImg.onload = () => {
+      view.heroReady = true;
+    };
+    heroImg.src = `${import.meta.env.BASE_URL}game/hero-ninja.png`;
+    actionSheet.onload = () => {
+      view.actionSheetReady = true;
+    };
+    actionSheet.src = `${import.meta.env.BASE_URL}game/ninja-action-sheet.png`;
 
     let raf = 0;
     let last = 0;
@@ -156,6 +184,26 @@ export default function Game({ design, onClose }) {
 
     const floater = (text, x, y, color, size) =>
       view.floaters.push({ text, x, y, t: 0.9, color, size });
+    const burst = (x, y, count = 12, color = "#ff334b", speed = 130) => {
+      for (let i = 0; i < count; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const v = speed * (0.3 + Math.random() * 0.85);
+        const life = 0.25 + Math.random() * 0.35;
+        view.effects.push({
+          x,
+          y,
+          vx: Math.cos(a) * v,
+          vy: Math.sin(a) * v - 24,
+          life,
+          max: life,
+          size: 1.5 + Math.random() * 3.5,
+          color,
+        });
+      }
+    };
+    const playAction = (type, duration) => {
+      view.action = { type, duration, elapsed: 0, face: s.face };
+    };
 
     const handleEvents = () => {
       for (const e of s.events) {
@@ -165,12 +213,21 @@ export default function Game({ design, onClose }) {
             break;
           case "jump":
             sfx.jump();
+            playAction("jump", 0.28);
+            break;
+          case "slash":
+            sfx.slash();
+            playAction("slash", 0.34);
+            view.shake = Math.max(view.shake, e.n === 3 ? 0.6 : 0.28);
+            burst(e.x, e.y, e.n === 3 ? 22 : 12, e.n === 3 ? "#fff0bb" : "#ff334b", e.n === 3 ? 210 : 145);
+            view.effects.push({ type: "slash", x: e.x, y: e.y, face: s.face, life: e.n === 3 ? 0.32 : 0.22, max: e.n === 3 ? 0.32 : 0.22, heavy: e.n === 3 });
             break;
           case "punch":
             sfx.punch();
             break;
           case "hit":
             sfx.impact();
+            burst(e.x, e.y, 8, "#ffd7a1", 115);
             floater(String(e.n), e.x, e.y, "#fff", 15);
             break;
           case "hurt":
@@ -182,11 +239,18 @@ export default function Game({ design, onClose }) {
             sfx.kill();
             break;
           case "skill":
-            sfx.skill();
+            sfx.skill(e.n);
+            playAction(e.n === "spin" ? "spin" : "slash", e.n === "spin" ? 0.78 : 0.56);
+            if (styleKey === "pedang") {
+              burst(e.x + s.face * 28, e.y, 28, "#ff263f", 210);
+              view.effects.push({ type: "wave", x: e.x, y: e.y, face: s.face, life: 0.44, max: 0.44 });
+            }
             break;
           case "ult":
             sfx.ult();
+            playAction("storm", 1.18);
             view.shake = 1;
+            if (styleKey === "pedang") burst(e.x, e.y, 55, "#ff243f", 300);
             break;
           case "shake":
             view.shake = 1;
@@ -250,6 +314,23 @@ export default function Game({ design, onClose }) {
       view.shake = Math.max(0, view.shake - dt * 3);
       if (!portraitRef.current) step(s, dt);
       handleEvents();
+      if (s.phase === "play") {
+        view.runPhase += (Math.min(1.35, Math.abs(s.pvx + s.kb) / 170) * dt * 8);
+      }
+      if (view.action) {
+        view.action.elapsed += dt;
+        if (view.action.elapsed >= view.action.duration) view.action = null;
+      }
+      view.effects.forEach((p) => {
+        p.life -= dt;
+        if (!p.type) {
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          p.vx *= 0.97;
+          p.vy = p.vy * 0.97 + 90 * dt;
+        }
+      });
+      view.effects = view.effects.filter((p) => p.life > 0);
       view.floaters.forEach((f) => {
         f.t -= dt;
       });
@@ -282,10 +363,13 @@ export default function Game({ design, onClose }) {
         initAudio();
         setInput(s, "atk", true);
       } else if (e.code === "KeyX" || e.code === "KeyK") {
+        initAudio();
         skill(s, 0);
       } else if (e.code === "KeyC" || e.code === "KeyL") {
+        initAudio();
         skill(s, 1);
       } else if (e.code === "KeyV" || e.code === "KeyU") {
+        initAudio();
         ultimate(s);
       }
     };
@@ -370,7 +454,7 @@ export default function Game({ design, onClose }) {
   const r = ui.result || {};
 
   return (
-    <div className="game">
+    <div className={`game${styleKey === "pedang" ? " game-ninja" : ""}`}>
       <canvas ref={canvasRef} />
 
       {showControls && (
@@ -395,8 +479,8 @@ export default function Game({ design, onClose }) {
             onPointerUp={atkOff}
             onPointerCancel={atkOff}
           >
-            <b>👊</b>
-            <small>Pukul</small>
+            <b>{styleKey === "pedang" ? "⚔️" : "👊"}</b>
+            <small>{styleKey === "pedang" ? "Tebas" : "Pukul"}</small>
           </button>
           <button
             ref={btnS1}
@@ -473,6 +557,7 @@ export default function Game({ design, onClose }) {
             <button
               onClick={() => {
                 initAudio();
+                startMusic();
                 if (s) startRun(s, sel, false);
               }}
             >
@@ -524,7 +609,11 @@ export default function Game({ design, onClose }) {
               Skor {r.score} · Koin {r.coins} · Musuh {r.kills} · Soal benar{" "}
               {r.right}
             </p>
-            <button onClick={() => nextStage(s)}>
+            <button onClick={() => {
+              initAudio();
+              startMusic();
+              nextStage(s);
+            }}>
               Lanjut ke Stage {ui.stage + 1}
             </button>
             <button className="ghost" onClick={onClose}>
@@ -543,7 +632,11 @@ export default function Game({ design, onClose }) {
               Skor {r.score} · Koin {r.coins} · Musuh {r.kills} · Soal benar{" "}
               {r.right}
             </p>
-            <button onClick={() => startRun(s, s.stage, false)}>
+            <button onClick={() => {
+              initAudio();
+              startMusic();
+              startRun(s, s.stage, false);
+            }}>
               Coba lagi
             </button>
             <button className="ghost" onClick={onClose}>
