@@ -215,6 +215,12 @@ export default function Game({ design, onClose }) {
             sfx.jump();
             playAction("jump", 0.28);
             break;
+          case "doublejump":
+            sfx.jump();
+            playAction("jump", 0.3);
+            view.shake = Math.max(view.shake, 0.12);
+            burst(e.x, e.y, 10, "#ff6677", 90);
+            break;
           case "slash":
             sfx.slash();
             playAction("slash", 0.34);
@@ -240,7 +246,10 @@ export default function Game({ design, onClose }) {
             break;
           case "skill":
             sfx.skill(e.n);
-            playAction(e.n === "spin" ? "spin" : "slash", e.n === "spin" ? 0.78 : 0.56);
+            playAction(
+              e.n === "spin" ? "spin" : e.n === "slash" ? "skill-slash" : "slash",
+              e.n === "spin" ? 0.66 : 0.48,
+            );
             if (styleKey === "pedang") {
               burst(e.x + s.face * 28, e.y, 28, "#ff263f", 210);
               view.effects.push({ type: "wave", x: e.x, y: e.y, face: s.face, life: 0.44, max: 0.44 });
@@ -248,7 +257,7 @@ export default function Game({ design, onClose }) {
             break;
           case "ult":
             sfx.ult();
-            playAction("storm", 1.18);
+            playAction("storm", 0.88);
             view.shake = 1;
             if (styleKey === "pedang") burst(e.x, e.y, 55, "#ff243f", 300);
             break;
@@ -462,6 +471,7 @@ export default function Game({ design, onClose }) {
           <div
             ref={padRef}
             className="pad"
+            aria-label="Kontrol arah: atas untuk lompat, tekan dua kali untuk lompat ganda; bawah untuk jongkok; kiri dan kanan untuk bergerak."
             onPointerDown={padDown}
             onPointerMove={padMove}
             onPointerUp={padUp}
@@ -471,6 +481,7 @@ export default function Game({ design, onClose }) {
             <span className="pk left">◀</span>
             <span className="pk right">▶</span>
             <span className="pk down">▼</span>
+            <span className="pad-hint">▲ ×2 lompat ganda · ▼ jongkok</span>
           </div>
 
           <button

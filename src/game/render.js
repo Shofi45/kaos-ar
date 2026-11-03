@@ -35,6 +35,32 @@ const ACTION_BOUNDS = {
   7: [0, 86, 275, 298],
 };
 
+const ACTION_POSES = {
+  slash: { cells: [4, 5, 6], cuts: [0.24, 0.66] },
+  "skill-slash": { cells: [5, 4, 6], cuts: [0.28, 0.72] },
+  spin: { cells: [4, 6, 5], cuts: [0.28, 0.72] },
+  storm: { cells: [5, 6, 4], cuts: [0.2, 0.56] },
+};
+
+function actionPose(type, progress) {
+  const sequence = ACTION_POSES[type];
+  if (!sequence) return { cell: null, blend: null };
+  const p = Math.max(0, Math.min(1, progress));
+  const window = 0.12;
+  for (let i = 0; i < sequence.cuts.length; i++) {
+    const start = sequence.cuts[i] - window / 2;
+    const end = sequence.cuts[i] + window / 2;
+    if (p >= start && p <= end) {
+      return {
+        cell: null,
+        blend: { from: sequence.cells[i], to: sequence.cells[i + 1], t: (p - start) / window },
+      };
+    }
+  }
+  const index = sequence.cuts.findIndex((cut) => p < cut);
+  return { cell: sequence.cells[index < 0 ? sequence.cells.length - 1 : index], blend: null };
+}
+
 const rr = (ctx, x, y, w, h, r) => {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -81,6 +107,29 @@ function chest(ctx, it) {
   ctx.fillStyle = "#fbbf24";
   ctx.fillRect(x, y + 12, 40, 5);
   ctx.fillRect(x + 16, y + 10, 8, 12);
+}
+
+function floatingPlatform(ctx, p, accent) {
+  const x = p.x - p.w / 2;
+  const y = p.y;
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,0.46)";
+  ctx.shadowBlur = 8;
+  ctx.shadowOffsetY = 5;
+  rr(ctx, x, y, p.w, p.h, 4);
+  ctx.fillStyle = "#24191f";
+  ctx.fill();
+  ctx.shadowColor = "transparent";
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetY = 0;
+  rr(ctx, x + 2, y, p.w - 4, 4, 2);
+  ctx.fillStyle = accent;
+  ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,0.18)";
+  ctx.fillRect(x + 8, y + 6, p.w - 16, 2);
+  ctx.fillStyle = "rgba(0,0,0,0.5)";
+  ctx.fillRect(x + 12, y + p.h - 3, p.w - 24, 2);
+  ctx.restore();
 }
 
 function quizBlock(ctx, it, time) {
@@ -228,28 +277,27 @@ function player(ctx, s, v) {
     let runNext = null;
     let runBlend = 0;
     let cell = null;
+    let poseBlend = null;
     let spin = 0;
     let lift = 0;
     const atlasReady = v.actionSheetReady && v.actionSheet.naturalWidth > 0;
-    if (action && atlasReady) {
-      if (action.type === "slash") {
-        const col = actionP < 0.24 ? 0 : actionP < 0.64 ? 1 : 2;
-        cell = 4 + col;
-      } else if (action.type === "spin") {
-        cell = actionP < 0.25 ? 4 : actionP < 0.52 ? 5 : actionP < 0.79 ? 6 : 5;
-      } else if (action.type === "storm") {
-        // Jurus pamungkas bergerak cepat tetapi tetap berpijak, bukan melompat.
-        cell = actionP < 0.24 ? 4 : actionP < 0.5 ? 5 : actionP < 0.76 ? 6 : 4;
-      } else if (action.type === "jump") {
-        cell = 7;
-      }
-      if (cell != null) source = v.actionSheet;
-    }
-    if (cell == null && !s.onGround && atlasReady) {
+    if (s.crouch && atlasReady) {
+      source = v.actionSheet;
+      cell = 4;
+    } else if (!s.onGround && atlasReady) {
       source = v.actionSheet;
       cell = 7;
+    } else if (action) {
+      const pose = actionPose(action.type, actionP);
+      cell = pose.cell;
+      poseBlend = pose.blend;
+      if ((cell != null || poseBlend) && atlasReady) source = v.actionSheet;
+      else {
+        cell = null;
+        poseBlend = null;
+      }
     }
-    if (cell == null && moving && s.onGround && v.runFrames?.length) {
+    if (cell == null && !s.crouch && !action && moving && s.onGround && v.runFrames?.length) {
       const phase = v.runPhase ?? v.time * 8;
       const framePosition = phase % v.runFrames.length;
       const idx = Math.floor(framePosition);
@@ -266,16 +314,17 @@ function player(ctx, s, v) {
         }
       }
     }
-    const artHeight = s.crouch ? 82 : 106;
-    const actionHeight = action?.type === "slash" && actionP >= 0.24 && actionP < 0.64 ? 82 : artHeight;
+    const artHeight = s.crouch ? 62 : 80;
+    const actionHeight = artHeight;
     const bounds = cell != null ? ACTION_BOUNDS[cell] : null;
     const sourceRatio = cell != null
       ? bounds[2] / bounds[3]
       : source.naturalWidth / source.naturalHeight;
     const drawHeight = cell != null ? actionHeight : artHeight;
     const artWidth = drawHeight * sourceRatio;
-    const lean = action?.type === "slash" ? -f * Math.sin(actionP * Math.PI) * 0.12 : action?.type === "spin" ? -f * Math.sin(actionP * Math.PI * 2) * 0.07 : moving ? Math.sin(v.time * 8) * 0.01 : 0;
-    const pivotSpin = Math.abs(spin) > 0.01;
+    const groundedAction = s.onGround && action && ["slash", "skill-slash", "spin", "storm"].includes(action.type);
+    const lean = groundedAction || cell != null ? 0 : moving ? Math.sin(v.time * 8) * 0.008 : 0;
+    const pivotSpin = false;
     ctx.save();
     ctx.translate(s.px, s.py + bob + lift - (pivotSpin ? drawHeight / 2 : 0));
     ctx.scale(f, 1);
@@ -283,11 +332,31 @@ function player(ctx, s, v) {
     ctx.shadowColor = "rgba(255,24,46,0.32)";
     ctx.shadowBlur = s.rageT > 0 ? 24 : action ? 15 : 7;
     const actorAlpha = ctx.globalAlpha;
-    if (cell != null) {
+    const drawActionCell = (frame, alpha = 1) => {
+      const [bx, by, bw, bh] = ACTION_BOUNDS[frame];
       const sw = source.naturalWidth / 4;
       const sh = source.naturalHeight / 2;
-      const [bx, by, bw, bh] = bounds;
-      ctx.drawImage(source, (cell % 4) * sw + bx * sw / 288, Math.floor(cell / 4) * sh + by * sh / 384, bw * sw / 288, bh * sh / 384, -artWidth * 0.5, pivotSpin ? -drawHeight / 2 : -drawHeight, artWidth, drawHeight);
+      const frameWidth = drawHeight * bw / bh;
+      ctx.save();
+      ctx.globalAlpha = actorAlpha * alpha;
+      ctx.drawImage(
+        source,
+        (frame % 4) * sw + bx * sw / 288,
+        Math.floor(frame / 4) * sh + by * sh / 384,
+        bw * sw / 288,
+        bh * sh / 384,
+        -frameWidth * 0.5,
+        -drawHeight,
+        frameWidth,
+        drawHeight,
+      );
+      ctx.restore();
+    };
+    if (poseBlend) {
+      drawActionCell(poseBlend.from, 1 - poseBlend.t);
+      drawActionCell(poseBlend.to, poseBlend.t);
+    } else if (cell != null) {
+      drawActionCell(cell);
     } else if (runNext) {
       ctx.globalAlpha = actorAlpha * (1 - runBlend);
       ctx.drawImage(source, -artWidth * 0.5, pivotSpin ? -drawHeight / 2 : -drawHeight, artWidth, drawHeight);
@@ -320,7 +389,42 @@ function player(ctx, s, v) {
     ctx.stroke();
   }
 
-  if ((s.atkT > 0 || (action && (action.type === "slash" || action.type === "storm"))) && s.style === "pedang") {
+  if (action?.type === "spin" && s.style === "pedang") {
+    const p = actionP;
+    ctx.save();
+    ctx.translate(s.px, s.py - 53);
+    ctx.scale(f, 1);
+    ctx.lineCap = "round";
+    for (let i = 0; i < 3; i++) {
+      const start = p * Math.PI * 2 + i * (Math.PI * 2 / 3);
+      const radius = 33 + i * 6;
+      ctx.strokeStyle = i === 0 ? `rgba(255,246,220,${0.9 * (1 - p * 0.2)})` : `rgba(255,35,62,${0.74 - i * 0.12})`;
+      ctx.lineWidth = i === 0 ? 4 : 10 - i * 2;
+      ctx.shadowColor = "#ff233f";
+      ctx.shadowBlur = 19;
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, start, start + 1.34);
+      ctx.stroke();
+    }
+    ctx.restore();
+  } else if (action?.type === "skill-slash" && s.style === "pedang") {
+    const p = actionP;
+    const start = -1.35 + p * 1.75;
+    ctx.save();
+    ctx.translate(s.px + f * 5, s.py - 52);
+    ctx.scale(f, 1);
+    ctx.lineCap = "round";
+    for (let i = 0; i < 3; i++) {
+      ctx.strokeStyle = i === 1 ? "rgba(255,250,231,0.96)" : `rgba(255,35,62,${0.62 - i * 0.1})`;
+      ctx.lineWidth = i === 1 ? 4 : 12 - i * 2;
+      ctx.shadowColor = "#ff233f";
+      ctx.shadowBlur = 20;
+      ctx.beginPath();
+      ctx.arc(i * 2, i * -3, 42 + i * 5, start - 0.42 + i * 0.1, start + 0.68 + i * 0.1);
+      ctx.stroke();
+    }
+    ctx.restore();
+  } else if ((s.atkT > 0 || (action && (action.type === "slash" || action.type === "storm"))) && s.style === "pedang") {
     const p = action ? actionP : 1 - s.atkT / 0.24;
     const start = -1.1 + p * 1.2;
     ctx.save();
@@ -504,6 +608,11 @@ export function draw(ctx, s, v) {
   ctx.save();
   ctx.translate(-s.cam, 0);
 
+  (s.platforms || []).forEach((p) => {
+    if (p.x + p.w / 2 < s.cam - 30 || p.x - p.w / 2 > s.cam + W + 30) return;
+    floatingPlatform(ctx, p, th.line);
+  });
+
   s.items.forEach((it) => {
     if (it.x < s.cam - 40 || it.x > s.cam + W + 40) return;
     if (it.type === "coin") coin(ctx, it.x, it.y, time);
@@ -525,10 +634,11 @@ export function draw(ctx, s, v) {
     ctx.arc(b.x, b.y, b.w / 2, 0, Math.PI * 2);
     ctx.fill();
   });
+  const shadowY = s.onGround ? s.py : GROUND;
   const shadowScale = Math.max(0.32, 1 - Math.max(0, GROUND - s.py) / 115);
   ctx.fillStyle = "rgba(4, 3, 8, 0.56)";
   ctx.beginPath();
-  ctx.ellipse(s.px, GROUND - 1, 18 * shadowScale, 3.5 * shadowScale, 0, 0, Math.PI * 2);
+  ctx.ellipse(s.px, shadowY - 1, 14 * shadowScale, 3 * shadowScale, 0, 0, Math.PI * 2);
   ctx.fill();
   player(ctx, s, v);
   drawEffects(ctx, v.effects || [], time);

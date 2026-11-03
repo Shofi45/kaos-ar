@@ -136,11 +136,28 @@ function makeEnemy(type, n, x, r) {
 function buildStage(s, n) {
   const r = s.rng;
   s.stage = n;
-  s.len = 2200 + Math.min(n, 8) * 260;
+  s.len = 3000 + Math.min(n, 10) * 420;
   s.enemies = [];
   s.items = [];
+  s.platforms = [];
   s.shots = [];
   s.eShots = [];
+
+  const platformRise = [50, 88, 62, 102, 54, 82];
+  const platformWidth = [120, 104, 128, 112];
+  for (let i = 0, x = 190; x < s.len - 180; i++, x += 260) {
+    const platform = {
+      x,
+      y: GROUND - platformRise[i % platformRise.length],
+      w: platformWidth[i % platformWidth.length],
+      h: 12,
+    };
+    s.platforms.push(platform);
+    if (i % 2 === 0) {
+      s.items.push({ type: "coin", x: x - 20, y: platform.y - 18 });
+      s.items.push({ type: "coin", x: x + 18, y: platform.y - 18 });
+    }
+  }
 
   const count = Math.min(3 + n * 2, 20);
   const span = s.len - 1150;
@@ -176,6 +193,7 @@ function buildStage(s, n) {
   s.kb = 0;
   s.face = 1;
   s.onGround = true;
+  s.jumpsUsed = 0;
   s.crouch = false;
   s.cam = 0;
   s.arena = false;
@@ -306,6 +324,7 @@ function hitEnemy(s, e, dmg, kb = 0, stun = 0) {
 
 export function attack(s) {
   if (s.phase !== "play" || s.atkCd > 0) return;
+  if (s.style === "pedang" && !s.onGround) return;
   s.atkCd = s.style === "pedang" ? (s.rageT > 0 ? 0.18 : 0.3) : s.rageT > 0 ? 0.2 : 0.34;
   s.atkT = s.style === "pedang" ? 0.24 : 0.16;
   s.combo = s.comboT > 0 ? s.combo + 1 : 1;
@@ -362,6 +381,7 @@ function shoot(s, o) {
 
 export function skill(s, i) {
   if (s.phase !== "play" || s.cd[i] > 0) return;
+  if (s.style === "pedang" && !s.onGround) return;
   const def = STYLES[s.style].skills[i];
   s.cd[i] = def.cd * (s.rageT > 0 ? 0.6 : 1);
   const f = s.face;
@@ -406,6 +426,7 @@ export function skill(s, i) {
 
 export function ultimate(s) {
   if (s.phase !== "play" || s.ult < MAX_ULT) return;
+  if (s.style === "pedang" && !s.onGround) return;
   s.ult = 0;
   const def = STYLES[s.style].ult;
   ev(s, "ult", s.px, s.py - 30, def.id);
@@ -437,6 +458,7 @@ export function ultimate(s) {
 
 export function setInput(s, key, v) {
   if (key === "up" && v && !s.input.up) s.jumpBuf = 0.14;
+  if (key === "atk" && v && !s.input.atk && s.style === "pedang") attack(s);
   s.input[key] = v;
 }
 
@@ -600,21 +622,43 @@ export function step(s, dt) {
     : s.onGround ? 1120 : 680;
   s.pvx += clamp(targetVx - s.pvx, -rate * dt, rate * dt);
 
-  if (s.jumpBuf > 0 && s.onGround && !s.crouch) {
+  if (s.jumpBuf > 0 && !s.crouch && (s.onGround || s.jumpsUsed < 2)) {
+    const isDoubleJump = !s.onGround;
     s.pvy = JUMP_V;
     s.onGround = false;
+    s.jumpsUsed = isDoubleJump ? 2 : 1;
     s.jumpBuf = 0;
-    ev(s, "jump");
+    ev(s, isDoubleJump ? "doublejump" : "jump", s.px, s.py);
   }
-  if (inp.atk) attack(s);
+  if (inp.atk && s.style !== "pedang") attack(s);
 
+  const previousFeetY = s.py;
   s.pvy += GRAVITY * dt;
   s.py += s.pvy * dt;
-  if (s.py >= GROUND) {
+  let landedOnPlatform = false;
+  if (s.pvy >= 0) {
+    const left = s.px - 14;
+    const right = s.px + 14;
+    const platform = s.platforms.find((p) =>
+      previousFeetY <= p.y &&
+      s.py >= p.y &&
+      right > p.x - p.w / 2 &&
+      left < p.x + p.w / 2,
+    );
+    if (platform) {
+      s.py = platform.y;
+      s.pvy = 0;
+      s.onGround = true;
+      s.jumpsUsed = 0;
+      landedOnPlatform = true;
+    }
+  }
+  if (!landedOnPlatform && s.py >= GROUND) {
     s.py = GROUND;
     s.pvy = 0;
     s.onGround = true;
-  } else {
+    s.jumpsUsed = 0;
+  } else if (!landedOnPlatform) {
     s.onGround = false;
   }
   s.px += (s.pvx + s.kb) * dt;

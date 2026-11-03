@@ -66,36 +66,73 @@ function tone(
   o.stop(t + dur + 0.03);
 }
 
+function noiseSweep(
+  dur,
+  { start = 2600, end = 500, vol = 0.28, filterType = "bandpass", q = 0.9, delay = 0 } = {},
+) {
+  if (!ctx || !master) return;
+  if (ctx.state === "suspended") ctx.resume().catch(() => {});
+  const t = ctx.currentTime + delay;
+  const length = Math.max(1, Math.floor(ctx.sampleRate * dur));
+  const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  let low = 0;
+  for (let i = 0; i < length; i++) {
+    const white = Math.random() * 2 - 1;
+    low = low * 0.72 + white * 0.28;
+    data[i] = low;
+  }
+  const source = ctx.createBufferSource();
+  const filter = ctx.createBiquadFilter();
+  const gain = ctx.createGain();
+  source.buffer = buffer;
+  filter.type = filterType;
+  filter.frequency.setValueAtTime(start, t);
+  filter.frequency.exponentialRampToValueAtTime(Math.max(80, end), t + dur);
+  filter.Q.setValueAtTime(q, t);
+  gain.gain.setValueAtTime(0.0001, t);
+  gain.gain.linearRampToValueAtTime(vol, t + Math.min(0.018, dur * 0.2));
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  source.connect(filter);
+  filter.connect(gain);
+  gain.connect(master);
+  source.start(t);
+  source.stop(t + dur + 0.02);
+}
+
 export const sfx = {
   punch: () => {
-    tone(180, 0.13, { type: "square", slide: -110, vol: 0.3 });
-    tone(95, 0.1, { type: "triangle", slide: -35, vol: 0.2, delay: 0.025 });
+    noiseSweep(0.1, { start: 620, end: 130, vol: 0.3, filterType: "lowpass", q: 0.6 });
+    tone(92, 0.12, { type: "sine", slide: -34, vol: 0.24 });
   },
   slash: () => {
-    tone(1120, 0.2, { type: "sawtooth", slide: -900, vol: 0.3 });
-    tone(460, 0.13, { type: "triangle", slide: -230, vol: 0.24, delay: 0.025 });
-    tone(150, 0.1, { type: "sine", slide: 80, vol: 0.16, delay: 0.06 });
+    noiseSweep(0.19, { start: 4200, end: 780, vol: 0.3, filterType: "highpass", q: 0.7 });
+    tone(1480, 0.11, { type: "sine", slide: -650, vol: 0.1, delay: 0.045 });
+    tone(820, 0.08, { type: "triangle", slide: -280, vol: 0.055, delay: 0.07 });
   },
   impact: () => {
-    tone(240, 0.14, { type: "sawtooth", slide: -170, vol: 0.3 });
-    tone(95, 0.12, { type: "triangle", slide: -45, vol: 0.2, delay: 0.02 });
+    noiseSweep(0.12, { start: 950, end: 180, vol: 0.26, filterType: "lowpass", q: 0.75 });
+    tone(78, 0.15, { type: "sine", slide: -28, vol: 0.26 });
   },
   kill: () => {
-    tone(660, 0.11, { type: "triangle", slide: -300, vol: 0.28 });
-    tone(330, 0.18, { type: "square", slide: -180, vol: 0.28, delay: 0.045 });
-    tone(120, 0.16, { type: "sine", slide: -55, vol: 0.2, delay: 0.03 });
+    noiseSweep(0.16, { start: 820, end: 140, vol: 0.2, filterType: "lowpass" });
+    tone(920, 0.22, { type: "sine", slide: -160, vol: 0.13, delay: 0.035 });
+    tone(116, 0.2, { type: "sine", slide: -38, vol: 0.22, delay: 0.025 });
   },
   skill: (kind = "") => {
-    const spin = kind === "spin" || kind === "storm";
-    tone(spin ? 420 : 720, 0.24, { type: "sawtooth", slide: spin ? 560 : -520, vol: 0.32 });
-    tone(spin ? 180 : 250, 0.2, { type: "triangle", slide: -90, vol: 0.24, delay: 0.035 });
-    tone(980, 0.12, { type: "sine", slide: -420, vol: 0.18, delay: 0.06 });
+    if (kind === "spin") {
+      noiseSweep(0.66, { start: 720, end: 3100, vol: 0.32, filterType: "bandpass", q: 1.1 });
+      tone(1120, 0.14, { type: "sine", slide: -420, vol: 0.09, delay: 0.48 });
+    } else {
+      noiseSweep(0.32, { start: 3400, end: 480, vol: 0.36, filterType: "highpass", q: 0.85 });
+      tone(1320, 0.16, { type: "sine", slide: -730, vol: 0.11, delay: 0.08 });
+      tone(84, 0.13, { type: "sine", slide: -22, vol: 0.12, delay: 0.18 });
+    }
   },
   ult: () => {
-    [262, 330, 392, 523, 659, 784].forEach((f, i) =>
-      tone(f, 0.2, { type: "sawtooth", vol: 0.27, delay: i * 0.05 }),
-    );
-    tone(96, 0.38, { type: "sine", slide: -35, vol: 0.25 });
+    noiseSweep(0.78, { start: 180, end: 2200, vol: 0.38, filterType: "lowpass", q: 0.65 });
+    tone(68, 0.56, { type: "sine", slide: -26, vol: 0.28 });
+    tone(520, 0.36, { type: "triangle", slide: 180, vol: 0.1, delay: 0.12 });
   },
   win: () => {
     [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) =>
